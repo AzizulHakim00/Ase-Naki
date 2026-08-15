@@ -3,159 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description"
-          content="Check electricity, gas, water, broadband and mobile network availability in Bangladesh.">
-    <title>Ase Naki? ? Live utility reports</title>
+    <title>Ase Naki? | Utility reports</title>
+    <link rel="icon" type="image/png" th:href="@{/images/app-icon.png}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-<header th:replace="~{fragments/layout :: header}"></header>
-<div th:replace="~{fragments/layout :: flash}"></div>
+<header th:replace="~{fragments/layout :: navbar}"></header>
 
 <main>
-    <section class="hero">
-        <div class="container hero-content">
-            <div class="hero-copy">
-                <span class="eyebrow">
-                    <span class="live-dot"></span>
-                    Live community updates
-                </span>
-                <h1>Is it available <em>in your area?</em></h1>
-                <p>Check electricity, gas, water and internet conditions before you leave home?or help a neighbour with one quick report.</p>
-                <div class="hero-actions">
-                    <a class="btn btn-primary btn-large" th:href="@{/reports/new}">
-                        Share a status
+    <section class="hero-section">
+        <div class="container hero-grid">
+            <div>
+                <span class="eyebrow">Neighbour-powered updates</span>
+                <h1>Electricity, gas, water or internet — <span>ase naki?</span></h1>
+                <p>Check the latest report from your area, or sign in and share a quick update.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-brand btn-lg" th:href="@{/reports/add}">
+                        <i class="bi bi-plus-circle"></i> Add a report
                     </a>
-                    <a class="btn btn-light btn-large" href="#live-reports">
-                        Browse reports ?
+                    <a class="btn btn-light btn-lg" href="#reports">
+                        View reports
                     </a>
                 </div>
-                <div class="trust-row">
-                    <div class="avatar-stack">
-                        <span>R</span><span>S</span><span>A</span><span>+</span>
-                    </div>
-                    <div>
-                        <strong>Neighbour verified</strong>
-                        <small>Confidence changes with every vote</small>
-                    </div>
-                </div>
+            </div>
+            <div class="hero-icon-card">
+                <img th:src="@{/images/app-icon.png}" alt="Ase Naki app icon">
+                <h2>Simple community checking</h2>
+                <p class="mb-0">Choose an area, utility and current status.</p>
             </div>
         </div>
     </section>
 
-    <section class="utility-strip">
-        <div class="container utility-grid">
-            <div class="utility-pill" th:each="utility : ${utilities}">
-                <span class="utility-icon" th:text="${utility.icon}">?</span>
-                <span th:text="${utility.name}">Electricity</span>
+    <section id="reports" class="container section-space">
+        <div th:if="${param.logout}" class="alert alert-success">You signed out successfully.</div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">Latest information</span>
+                <h2>Community reports</h2>
             </div>
+            <span class="report-count" th:text="${reports.size() + ' reports'}">0 reports</span>
         </div>
-    </section>
 
-    <section class="section" id="live-reports">
-        <div class="container">
-            <div class="section-heading">
-                <div>
-                    <span class="eyebrow eyebrow-dark">What neighbours see now</span>
-                    <h2>Live utility reports</h2>
-                    <p>Filter by area and utility to find the update you need.</p>
-                </div>
-                <div class="mini-stats">
-                    <span><strong th:text="${activeCount}">0</strong> active reports</span>
-                    <span><strong th:text="${areaCount}">0</strong> covered areas</span>
-                </div>
-            </div>
+        <div th:if="${reports.isEmpty()}" class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>No reports yet</h3>
+            <p>Be the first person to share an update.</p>
+        </div>
 
-            <form class="filter-card" method="get" th:action="@{/}">
-                <label>
-                    <span>Area</span>
-                    <select name="areaId">
-                        <option value="">All covered areas</option>
-                        <option th:each="area : ${areas}"
-                                th:value="${area.id}"
-                                th:selected="${selectedAreaId == area.id}"
-                                th:text="${area.displayName}">
-                            Mirpur 10
-                        </option>
-                    </select>
-                </label>
-                <label>
-                    <span>Utility</span>
-                    <select name="utilityTypeId">
-                        <option value="">All utilities</option>
-                        <option th:each="utility : ${utilities}"
-                                th:value="${utility.id}"
-                                th:selected="${selectedUtilityTypeId == utility.id}"
-                                th:text="${utility.icon + '  ' + utility.name}">
-                            Electricity
-                        </option>
-                    </select>
-                </label>
-                <button class="btn btn-dark" type="submit">Show updates</button>
-                <a class="clear-filter" th:href="@{/}">Clear</a>
-            </form>
-
-            <div class="empty-state" th:if="${#lists.isEmpty(reports)}">
-                <span>?</span>
-                <h3>No active report matches this filter</h3>
-                <p>That can be good news. If you are nearby, share the current status.</p>
-                <a class="btn btn-primary" th:href="@{/reports/new}">Add first report</a>
-            </div>
-
-            <div class="report-grid" th:unless="${#lists.isEmpty(reports)}">
-                <article class="report-card" th:each="report : ${reports}">
+        <div class="row g-4" th:unless="${reports.isEmpty()}">
+            <div class="col-md-6 col-lg-4" th:each="report : ${reports}">
+                <article class="report-card h-100">
                     <div class="report-top">
-                        <span class="report-utility-icon"
-                              th:text="${report.utilityType.icon}">?</span>
-                        <div>
-                            <p class="report-utility"
-                               th:text="${report.utilityType.name}">Electricity</p>
-                            <h3 th:text="${report.area.name}">Mirpur 10</h3>
-                            <small th:text="${report.area.thana.name + ', ' + report.area.thana.district.name}">
-                                Mirpur, Dhaka
-                            </small>
+                        <div class="utility-icon">
+                            <i th:class="${'bi ' + report.utilityType.iconClass}"></i>
                         </div>
-                        <span class="status-badge"
+                        <span class="status-pill"
                               th:classappend="${report.status.cssClass}"
-                              th:text="${report.status.label}">Unavailable</span>
+                              th:text="${report.status.label}">Available</span>
                     </div>
 
-                    <p class="report-description"
-                       th:text="${report.description ?: 'No extra description was added.'}">
-                        Details
-                    </p>
-
-                    <div class="confidence">
-                        <div class="confidence-label">
-                            <span>Community confidence</span>
-                            <strong th:text="${report.confidence + '%'}">80%</strong>
-                        </div>
-                        <div class="progress">
-                            <span th:style="'width:' + ${report.confidence} + '%'"></span>
-                        </div>
-                    </div>
+                    <p class="utility-name" th:text="${report.utilityType.label}">Electricity</p>
+                    <h3 th:text="${report.area.name}">Mirpur 10</h3>
+                    <p class="text-secondary mb-2" th:text="${report.area.district}">Dhaka</p>
+                    <p class="report-description" th:text="${report.description}"></p>
 
                     <div class="report-meta">
-                        <span th:if="${report.ageInMinutes < 60}"
-                              th:text="${report.ageInMinutes + ' min ago'}">5 min ago</span>
-                        <span th:unless="${report.ageInMinutes < 60}"
-                              th:text="${report.ageInMinutes / 60 + ' hr ago'}">1 hr ago</span>
-                        <span th:text="${report.confirmations.size() + ' votes'}">0 votes</span>
-                        <span th:if="${report.hasEvidence()}">Evidence attached</span>
+                        <span><i class="bi bi-person"></i> <span th:text="${report.reporter.name}"></span></span>
+                        <span><i class="bi bi-clock"></i> <span th:text="${#temporals.format(report.reportedAt, 'dd MMM, hh:mm a')}"></span></span>
                     </div>
 
-                    <div class="card-actions">
-                        <a class="btn btn-soft"
-                           th:href="@{/reports/view/{id}(id=${report.id})}">
-                            View details
-                        </a>
-                        <form th:if="${signedInUser != null}"
-                              th:action="@{/saved-locations/toggle/{id}(id=${report.area.id})}"
-                              method="post">
-                            <button class="icon-button" type="submit"
-                                    title="Save this location">?</button>
-                        </form>
-                    </div>
+                    <a class="stretched-link details-link"
+                       th:href="@{/reports/{id}(id=${report.id})}">View details</a>
                 </article>
             </div>
         </div>
@@ -163,27 +89,21 @@
 
     <section class="how-section">
         <div class="container">
-            <div class="section-heading compact">
+            <div class="section-heading">
                 <div>
-                    <span class="eyebrow eyebrow-dark">Simple and transparent</span>
-                    <h2>How confidence works</h2>
+                    <span class="eyebrow">Easy to understand</span>
+                    <h2>How it works</h2>
                 </div>
             </div>
-            <div class="steps-grid">
-                <div class="step-card">
-                    <span>01</span>
-                    <h3>Someone reports</h3>
-                    <p>A neighbour selects an area, utility and current condition.</p>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="step-card"><span>1</span><h3>Check</h3><p>Read recent utility reports from different areas.</p></div>
                 </div>
-                <div class="step-card">
-                    <span>02</span>
-                    <h3>Others verify</h3>
-                    <p>Confirmations raise confidence; disputes lower it.</p>
+                <div class="col-md-4">
+                    <div class="step-card"><span>2</span><h3>Sign in</h3><p>Your account is protected with Spring Security.</p></div>
                 </div>
-                <div class="step-card">
-                    <span>03</span>
-                    <h3>The status expires</h3>
-                    <p>Old reports close automatically so the feed stays useful.</p>
+                <div class="col-md-4">
+                    <div class="step-card"><span>3</span><h3>Share</h3><p>Add a short report and an optional evidence image.</p></div>
                 </div>
             </div>
         </div>
@@ -191,6 +111,5 @@
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
-<script th:src="@{/js/app.js}"></script>
 </body>
 </html>

@@ -5,12 +5,10 @@ import com.azizul.asenaki.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -24,30 +22,25 @@ public class AuthController {
     }
 
     @GetMapping("/register")
-    public String registerForm(Model model) {
-        if (!model.containsAttribute("registrationForm")) {
-            model.addAttribute("registrationForm", new RegistrationForm());
-        }
+    public String registerForm(
+            @ModelAttribute("form") RegistrationForm form) {
         return "auth/register";
     }
 
     @PostMapping("/register")
     public String register(
-            @Valid @ModelAttribute RegistrationForm registrationForm,
-            BindingResult bindingResult,
-            RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
+            @Valid @ModelAttribute("form") RegistrationForm form,
+            BindingResult result) {
+        if (result.hasErrors()) {
             return "auth/register";
         }
 
-        userService.register(registrationForm);
-        redirectAttributes.addFlashAttribute(
-                "success", "Account created. You can sign in now.");
-        return "redirect:/login";
-    }
-
-    @GetMapping("/access-denied")
-    public String accessDenied() {
-        return "error/403";
+        try {
+            userService.register(form);
+            return "redirect:/login?registered";
+        } catch (IllegalArgumentException exception) {
+            result.rejectValue("email", "duplicate", exception.getMessage());
+            return "auth/register";
+        }
     }
 }

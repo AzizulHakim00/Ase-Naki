@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:asenaki-test;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: create-drop
+app:
+  admin:
+    password: TestAdmin123!

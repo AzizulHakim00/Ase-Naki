@@ -1,86 +1,46 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-<header class="site-header" th:fragment="header">
-    <div class="container nav-wrap">
+
+<header th:fragment="navbar" class="site-header">
+    <nav class="container nav-wrap">
         <a class="brand" th:href="@{/}">
-            <span class="brand-mark">?</span>
+            <img th:src="@{/images/app-icon.png}" alt="Ase Naki icon">
             <span>
                 <strong>Ase Naki?</strong>
-                <small>Community utility check</small>
+                <small>Community utility updates</small>
             </span>
         </a>
 
-        <button class="nav-toggle" type="button"
-                aria-label="Open navigation" data-nav-toggle>?</button>
+        <div class="nav-links">
+            <a th:href="@{/}"><i class="bi bi-house-door"></i> Home</a>
 
-        <nav class="main-nav" data-nav>
-            <a th:href="@{/}">Live reports</a>
-            <a th:if="${signedInUser != null}" th:href="@{/saved-locations}">
-                Saved places
-            </a>
-            <a th:if="${signedInUser != null}" th:href="@{/notifications}">
-                Alerts
-                <span class="notification-count"
-                      th:if="${unreadNotifications > 0}"
-                      th:text="${unreadNotifications}">0</span>
-            </a>
-            <a th:if="${signedInUser != null and signedInUser.moderatorAccess}"
-               th:href="@{/admin/reports}">Moderate</a>
-        </nav>
+            <div sec:authorize="isAnonymous()" class="nav-actions">
+                <a th:href="@{/login}">Sign in</a>
+                <a class="btn btn-brand btn-sm" th:href="@{/register}">Register</a>
+            </div>
 
-        <div class="nav-actions">
-            <a th:if="${signedInUser == null}"
-               class="btn btn-ghost" th:href="@{/login}">Sign in</a>
-            <a th:if="${signedInUser == null}"
-               class="btn btn-primary" th:href="@{/register}">Join free</a>
-
-            <a th:if="${signedInUser != null}"
-               class="btn btn-primary" th:href="@{/reports/new}">
-                + Report status
-            </a>
-            <form th:if="${signedInUser != null}"
-                  th:action="@{/logout}" method="post">
-                <button class="user-chip" type="submit"
-                        th:title="'Signed in as ' + ${signedInUser.email}">
-                    <span th:text="${#strings.substring(signedInUser.profile.fullName, 0, 1)}">U</span>
-                    <span class="user-chip-name"
-                          th:text="${signedInUser.profile.fullName}">User</span>
-                    <span aria-hidden="true">?</span>
-                </button>
-            </form>
+            <div sec:authorize="isAuthenticated()" class="nav-actions">
+                <a class="btn btn-brand btn-sm" th:href="@{/reports/add}">
+                    <i class="bi bi-plus-circle"></i> Add report
+                </a>
+                <form th:action="@{/logout}" method="post">
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">
+                        Sign out
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
+    </nav>
 </header>
 
-<div class="flash-stack container" th:fragment="flash">
-    <div class="flash flash-success" th:if="${success}" th:text="${success}"></div>
-    <div class="flash flash-error" th:if="${error}" th:text="${error}"></div>
-</div>
-
-<footer class="site-footer" th:fragment="footer">
-    <div class="container footer-grid">
-        <div>
-            <a class="brand footer-brand" th:href="@{/}">
-                <span class="brand-mark">?</span>
-                <span><strong>Ase Naki?</strong></span>
-            </a>
-            <p>Neighbour-powered utility updates for Bangladesh.</p>
-        </div>
-        <div>
-            <strong>Quick links</strong>
-            <a th:href="@{/}">Current reports</a>
-            <a th:href="@{/reports/new}">Share an update</a>
-        </div>
-        <div>
-            <strong>Community note</strong>
-            <p>Verify reports when you are nearby. Never upload private documents.</p>
-        </div>
-    </div>
-    <div class="container footer-bottom">
-        <span>? 2026 Ase Naki?</span>
-        <span>Built for Bangladesh ? Community first</span>
+<footer th:fragment="footer" class="site-footer">
+    <div class="container">
+        <p class="mb-1"><strong>Ase Naki?</strong> — simple utility updates for Bangladesh.</p>
+        <small>Do not upload private documents or recognisable faces.</small>
     </div>
 </footer>
+
 </body>
 </html>

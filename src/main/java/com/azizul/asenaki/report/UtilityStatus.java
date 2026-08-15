@@ -1,30 +1,17 @@
 package com.azizul.asenaki.report;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum UtilityStatus {
-    AVAILABLE("Available"),
-    UNAVAILABLE("Unavailable"),
-    LOW_PRESSURE("Low pressure"),
-    UNSTABLE("Unstable"),
-    SLOW("Slow"),
-    PARTIAL_OUTAGE("Partial outage"),
-    MAINTENANCE("Maintenance"),
-    RESTORED("Restored");
+    AVAILABLE("Available", "status-available"),
+    UNAVAILABLE("Unavailable", "status-unavailable"),
+    LOW_PRESSURE("Low pressure", "status-warning"),
+    UNSTABLE("Unstable", "status-warning"),
+    MAINTENANCE("Maintenance", "status-warning");
 
     private final String label;
-
-    UtilityStatus(String label) {
-        this.label = label;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public String getCssClass() {
-        return switch (this) {
-            case AVAILABLE, RESTORED -> "status-good";
-            case UNAVAILABLE, PARTIAL_OUTAGE -> "status-bad";
-            default -> "status-warning";
-        };
-    }
+    private final String cssClass;
 }

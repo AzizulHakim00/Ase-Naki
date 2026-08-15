@@ -1,12 +1,15 @@
 package com.azizul.asenaki.location;
 
-import com.azizul.asenaki.common.BaseEntity;
+import com.azizul.asenaki.report.UtilityReport;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,26 +18,29 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "areas")
-public class Area extends BaseEntity {
+@Table(name = "app_areas")
+public class Area {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, length = 20)
-    private String postcode;
+    @Column(nullable = false, length = 100)
+    private String district;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "thana_id", nullable = false)
-    private Thana thana;
+    // One area can have many utility reports.
+    @OneToMany(mappedBy = "area")
+    private List<UtilityReport> reports = new ArrayList<>();
 
-    public Area(String name, String postcode, Thana thana) {
+    public Area(String name, String district) {
         this.name = name;
-        this.postcode = postcode;
-        this.thana = thana;
+        this.district = district;
     }
 
     public String getDisplayName() {
-        return name + ", " + thana.getName();
+        return name + ", " + district;
     }
 }

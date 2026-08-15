@@ -3,152 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${report.utilityType.name + ' in ' + report.area.name + ' ? Ase Naki?'}">
-        Report details
-    </title>
+    <title>Report details | Ase Naki?</title>
+    <link rel="icon" type="image/png" th:href="@{/images/app-icon.png}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-<header th:replace="~{fragments/layout :: header}"></header>
-<div th:replace="~{fragments/layout :: flash}"></div>
-<main class="page-shell">
-    <div class="container details-layout">
-        <section>
-            <a class="back-link" th:href="@{/}">? Back to live reports</a>
-            <article class="panel detail-card">
-                <div class="detail-heading">
-                    <span class="report-utility-icon large"
-                          th:text="${report.utilityType.icon}">?</span>
-                    <div>
-                        <p class="report-utility" th:text="${report.utilityType.name}">
-                            Electricity
-                        </p>
-                        <h1 th:text="${report.area.name}">Mirpur 10</h1>
-                        <p class="muted"
-                           th:text="${report.area.thana.name + ', ' + report.area.thana.district.name + ', ' + report.area.thana.district.division.name}">
-                            Mirpur, Dhaka
-                        </p>
-                    </div>
-                    <span class="status-badge detail-status"
-                          th:classappend="${report.status.cssClass}"
-                          th:text="${report.status.label}">Unavailable</span>
-                </div>
+<header th:replace="~{fragments/layout :: navbar}"></header>
 
-                <div class="confidence confidence-large">
-                    <div class="confidence-label">
-                        <span>Community confidence</span>
-                        <strong th:text="${report.confidence + '%'}">80%</strong>
-                    </div>
-                    <div class="progress">
-                        <span th:style="'width:' + ${report.confidence} + '%'"></span>
-                    </div>
-                    <small>Based on age, evidence, reporter trust and community votes.</small>
-                </div>
+<main class="container details-page">
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-                <div class="description-box">
-                    <strong>Reporter note</strong>
-                    <p th:text="${report.description ?: 'No extra description was added.'}">
-                        Report detail
-                    </p>
-                </div>
+    <a class="back-link" th:href="@{/}"><i class="bi bi-arrow-left"></i> Back to reports</a>
 
-                <div class="detail-facts">
-                    <div>
-                        <span>Reported by</span>
-                        <strong th:text="${report.reporter.profile.fullName}">Reporter</strong>
-                    </div>
-                    <div>
-                        <span>Reported</span>
-                        <strong th:if="${report.ageInMinutes < 60}"
-                                th:text="${report.ageInMinutes + ' minutes ago'}">Now</strong>
-                        <strong th:unless="${report.ageInMinutes < 60}"
-                                th:text="${report.ageInMinutes / 60 + ' hours ago'}">Today</strong>
-                    </div>
-                    <div>
-                        <span>Confirmations</span>
-                        <strong th:text="${report.confirmCount}">
-                            0
-                        </strong>
-                    </div>
-                    <div>
-                        <span>Disputes</span>
-                        <strong th:text="${report.disputeCount}">
-                            0
-                        </strong>
-                    </div>
-                </div>
-
-                <div th:if="${report.hasEvidence()}" class="evidence-section">
-                    <h2>Attached evidence</h2>
-                    <div class="evidence-grid">
-                        <a class="evidence-item"
-                           th:each="evidence : ${report.evidenceFiles}"
-                           th:href="@{/evidence/{id}(id=${evidence.id})}"
-                           target="_blank" rel="noopener">
-                            <img th:if="${evidence.image}"
-                                 th:src="@{/evidence/{id}(id=${evidence.id})}"
-                                 th:alt="${evidence.originalFileName}">
-                            <span th:unless="${evidence.image}" class="pdf-icon">PDF</span>
-                            <small th:text="${evidence.originalFileName}">file.jpg</small>
-                        </a>
-                    </div>
-                </div>
-            </article>
-        </section>
-
-        <aside>
-            <div class="panel vote-panel">
-                <span class="form-kicker">Are you nearby?</span>
-                <h2>Verify this report</h2>
-                <p>Your vote immediately updates the confidence score.</p>
-
-                <div th:if="${signedInUser == null}" class="signin-prompt">
-                    <p>Sign in to confirm, dispute or mark this utility restored.</p>
-                    <a class="btn btn-primary btn-block" th:href="@{/login}">Sign in to vote</a>
-                </div>
-
-                <div th:if="${signedInUser != null}" class="vote-stack">
-                    <form th:action="@{/reports/{id}/vote(id=${report.id})}" method="post">
-                        <input type="hidden" name="choice" value="CONFIRM">
-                        <button class="btn btn-confirm btn-block" type="submit">
-                            ? Confirm this status
-                        </button>
-                    </form>
-                    <form th:action="@{/reports/{id}/vote(id=${report.id})}" method="post">
-                        <input type="hidden" name="choice" value="DISPUTE">
-                        <button class="btn btn-dispute btn-block" type="submit">
-                            ? This is not accurate
-                        </button>
-                    </form>
-                    <form th:if="${report.incident != null}"
-                          th:action="@{/reports/{id}/vote(id=${report.id})}" method="post">
-                        <input type="hidden" name="choice" value="RESTORED">
-                        <button class="btn btn-soft btn-block" type="submit">
-                            ? Service has returned
-                        </button>
-                    </form>
-                </div>
-
-                <div class="vote-summary">
-                    <span>
-                        <strong th:text="${report.confirmations.size()}">0</strong>
-                        total votes
-                    </span>
-                    <span>
-                        <strong th:text="${report.restoredCount}">0</strong>
-                        restoration votes
-                    </span>
-                </div>
+    <article class="details-card">
+        <div class="details-heading">
+            <div class="utility-icon utility-icon-large">
+                <i th:class="${'bi ' + report.utilityType.iconClass}"></i>
             </div>
-
-            <div class="panel safety-card">
-                <strong>Community safety</strong>
-                <p>Evidence is optional. Do not share personal details or confront utility workers.</p>
+            <div>
+                <p class="utility-name" th:text="${report.utilityType.label}"></p>
+                <h1 th:text="${report.area.name}"></h1>
+                <p class="text-secondary mb-0" th:text="${report.area.district}"></p>
             </div>
-        </aside>
-    </div>
+            <span class="status-pill ms-auto"
+                  th:classappend="${report.status.cssClass}"
+                  th:text="${report.status.label}"></span>
+        </div>
+
+        <hr>
+        <h2>What was reported</h2>
+        <p class="details-description" th:text="${report.description}"></p>
+
+        <div class="details-meta">
+            <span><i class="bi bi-person-circle"></i> <span th:text="${report.reporter.name}"></span></span>
+            <span><i class="bi bi-calendar3"></i> <span th:text="${#temporals.format(report.reportedAt, 'dd MMM yyyy, hh:mm a')}"></span></span>
+        </div>
+
+        <div th:if="${report.hasEvidence()}" class="evidence-section">
+            <h2>Evidence image</h2>
+            <div class="evidence-grid">
+                <a th:each="file : ${report.evidenceFiles}"
+                   th:href="@{/evidence/{id}(id=${file.id})}" target="_blank">
+                    <img th:src="@{/evidence/{id}(id=${file.id})}"
+                         th:alt="${file.fileName}">
+                </a>
+            </div>
+        </div>
+    </article>
 </main>
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
-<script th:src="@{/js/app.js}"></script>
 </body>
 </html>

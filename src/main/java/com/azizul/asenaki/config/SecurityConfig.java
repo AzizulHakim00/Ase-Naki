@@ -1,17 +1,14 @@
 package com.azizul.asenaki.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -20,22 +17,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    public SecurityFilterChain filterChain(HttpSecurity http)
             throws Exception {
-        http
-                .authorizeHttpRequests(requests -> requests
+        http.authorizeHttpRequests(request -> request
                         .requestMatchers(
                                 "/", "/login", "/register",
-                                "/css/**", "/js/**", "/images/**",
+                                "/css/**", "/images/**",
                                 "/actuator/health", "/error"
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/reports/view/**", "/evidence/**"
+                                "/reports/{id:[0-9]+}", "/evidence/**"
                         ).permitAll()
-                        .requestMatchers("/admin/**")
-                        .hasAnyRole("ADMIN", "MODERATOR")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -48,9 +41,6 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutSuccessUrl("/?logout")
                         .permitAll()
-                )
-                .exceptionHandling(exceptions -> exceptions
-                        .accessDeniedPage("/access-denied")
                 )
                 .rememberMe(remember -> remember
                         .key("ase-naki-remember-me")

@@ -1,51 +1,17 @@
 package com.azizul.asenaki.report;
 
-import com.azizul.asenaki.common.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.util.Arrays;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@Entity
-@Table(name = "utility_types")
-public class UtilityType extends BaseEntity {
+@RequiredArgsConstructor
+public enum UtilityType {
+    ELECTRICITY("Electricity", "bi-lightning-charge-fill"),
+    GAS("Gas", "bi-fire"),
+    WATER("Water", "bi-droplet-fill"),
+    BROADBAND("Broadband", "bi-wifi"),
+    MOBILE_NETWORK("Mobile network", "bi-reception-4");
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String name;
-
-    @Column(nullable = false, unique = true, length = 50)
-    private String slug;
-
-    @Column(nullable = false, length = 10)
-    private String icon;
-
-    @Column(nullable = false, length = 250)
-    private String allowedStatuses;
-
-    public UtilityType(String name, String slug, String icon,
-                       List<UtilityStatus> statuses) {
-        this.name = name;
-        this.slug = slug;
-        this.icon = icon;
-        this.allowedStatuses = String.join(",",
-                statuses.stream().map(Enum::name).toList());
-    }
-
-    public boolean allows(UtilityStatus status) {
-        return getAllowedStatusList().contains(status);
-    }
-
-    public List<UtilityStatus> getAllowedStatusList() {
-        return Arrays.stream(allowedStatuses.split(","))
-                .map(UtilityStatus::valueOf)
-                .toList();
-    }
+    private final String label;
+    private final String iconClass;
 }
