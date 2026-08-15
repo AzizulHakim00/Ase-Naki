@@ -7,4 +7,6 @@ public interface UtilityReportRepository
         extends JpaRepository<UtilityReport, Long> {
 
     List<UtilityReport> findAllByOrderByReportedAtDesc();
+
+    boolean existsByDescription(String description);
 }

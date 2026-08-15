@@ -2,6 +2,7 @@ package com.azizul.asenaki;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azizul.asenaki.location.AreaRepository;
 import com.azizul.asenaki.report.ReportEvidence;
 import com.azizul.asenaki.report.ReportEvidenceRepository;
 import com.azizul.asenaki.report.UtilityReportRepository;
@@ -19,8 +20,23 @@ class AseNakiApplicationTests {
     @Autowired
     private ReportEvidenceRepository evidenceRepository;
 
+    @Autowired
+    private AreaRepository areaRepository;
+
     @Test
     void applicationStarts() {
+    }
+
+    @Test
+    void databaseContainsBroadDhakaCoverage() {
+        var areaNames = areaRepository.findAllByOrderByNameAsc().stream()
+                .map(area -> area.getName())
+                .toList();
+
+        assertThat(areaNames.size()).isGreaterThan(140);
+        assertThat(areaNames).contains(
+                "Uttara Sector 7", "Mirpur 10", "Gulshan 2",
+                "Badda", "Motijheel", "Jatrabari", "Wari");
     }
 
     @Test

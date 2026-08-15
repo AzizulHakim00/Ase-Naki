@@ -382,12 +382,24 @@ h3,
 }
 
 .mini-stats {
-    min-width: 120px;
-    padding: 12px 18px;
+    min-width: 390px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0;
+    overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 14px;
     text-align: center;
     background: rgba(255, 255, 255, 0.58);
+}
+
+.mini-stats > span {
+    padding: 13px 15px;
+    border-right: 1px solid var(--line);
+}
+
+.mini-stats > span:last-child {
+    border-right: 0;
 }
 
 .mini-stats strong {
@@ -397,7 +409,8 @@ h3,
     line-height: 1.1;
 }
 
-.mini-stats span {
+.mini-stats small {
+    display: block;
     color: var(--muted);
     font-size: 0.75rem;
     font-weight: 700;
@@ -781,6 +794,33 @@ textarea.form-control {
     font-weight: 650;
 }
 
+.area-search {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.area-search > i {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    z-index: 2;
+    color: var(--green-dark);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.area-search .form-control {
+    padding-left: 42px;
+    background: #f7fbf9;
+}
+
+.form-help {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
 .upload-box {
     position: relative;
     min-height: 140px;
@@ -1130,8 +1170,13 @@ textarea.form-control {
     }
 
     .mini-stats {
+        width: 100%;
         min-width: 0;
         text-align: left;
+    }
+
+    .mini-stats > span {
+        padding: 12px;
     }
 
     .report-card {

@@ -24,7 +24,7 @@
             <div class="hero-copy">
                 <span class="eyebrow"><span class="live-dot"></span> Live community updates</span>
                 <h1>Is it available <em>in your area?</em></h1>
-                <p>Check electricity, gas, water and internet conditions—or help a neighbour with one quick report.</p>
+                <p>Check electricity, gas, water and internet conditions&mdash;or help a neighbour with one quick report.</p>
                 <div class="hero-actions">
                     <a class="btn btn-brand btn-lg" th:href="@{/reports/add}">
                         <i class="bi bi-plus-circle"></i> Share a status
@@ -64,11 +64,12 @@
                 <div>
                     <span class="eyebrow eyebrow-dark">What neighbours see now</span>
                     <h2>Live utility reports</h2>
-                    <p>Recent updates from covered areas across Bangladesh.</p>
+                    <p>Recent updates across Dhaka, with selected areas from other cities.</p>
                 </div>
                 <div class="mini-stats">
-                    <span><strong th:text="${reports.size()}">0</strong> recent reports</span>
-                    <span><strong th:text="${utilities.length}">5</strong> utility types</span>
+                    <span><strong th:text="${areaCount}">0</strong><small>supported areas</small></span>
+                    <span><strong th:text="${reports.size()}">0</strong><small>recent reports</small></span>
+                    <span><strong th:text="${utilities.length}">5</strong><small>utility types</small></span>
                 </div>
             </div>
 

@@ -31,12 +31,22 @@
               method="post" enctype="multipart/form-data">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label" for="areaId">Area</label>
-                    <select class="form-select" id="areaId" th:field="*{areaId}">
+                    <label class="form-label" for="areaSearch">Find your area</label>
+                    <div class="area-search">
+                        <i class="bi bi-search"></i>
+                        <input class="form-control" id="areaSearch" type="search"
+                               placeholder="Type Mirpur, Uttara, Badda..."
+                               autocomplete="off" aria-controls="areaId">
+                    </div>
+                    <select class="form-select" id="areaId" th:field="*{areaId}"
+                            aria-label="Choose an area">
                         <option value="">Choose an area</option>
                         <option th:each="area : ${areas}" th:value="${area.id}"
                                 th:text="${area.displayName}"></option>
                     </select>
+                    <small class="form-help" id="areaSearchHelp">
+                        <span th:text="${areas.size()}">0</span> supported areas
+                    </small>
                     <div class="field-error" th:errors="*{areaId}"></div>
                 </div>
 
@@ -73,7 +83,7 @@
                     <label class="upload-box" for="evidence">
                         <i class="bi bi-cloud-arrow-up upload-icon"></i>
                         <strong>Choose a photo</strong>
-                        <small>JPG, PNG or WebP · maximum 5 MB</small>
+                        <small>JPG, PNG or WebP &middot; maximum 5 MB</small>
                         <input id="evidence" type="file" th:field="*{evidence}"
                                accept="image/jpeg,image/png,image/webp">
                     </label>
@@ -92,5 +102,27 @@
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<script>
+    const areaSearch = document.getElementById("areaSearch");
+    const areaSelect = document.getElementById("areaId");
+    const areaHelp = document.getElementById("areaSearchHelp");
+    const areaOptions = Array.from(areaSelect.options).slice(1);
+
+    areaSearch.addEventListener("input", function () {
+        const searchText = areaSearch.value.toLowerCase().trim();
+        let visibleAreas = 0;
+
+        for (const option of areaOptions) {
+            const matches = option.text.toLowerCase().includes(searchText);
+            option.hidden = !matches;
+            if (matches) {
+                visibleAreas++;
+            }
+        }
+
+        areaHelp.textContent = visibleAreas + " matching areas";
+    });
+</script>
 </body>
 </html>
