@@ -143,6 +143,9 @@ The repository includes `Dockerfile` and `render.yaml`.
 4. Wait for `/actuator/health` to become healthy.
 5. Register a normal account from the live site.
 
+`DATABASE_URL` accepts Neon's normal `postgresql://user:password@host/database` format. The small
+`DatabaseConfig` class converts it to Java's JDBC format, so no manual URL editing is needed.
+
 The Blueprint connects `SPRING_PROFILES_ACTIVE=prod`, a secret `DATABASE_URL`, and a generated `APP_ADMIN_PASSWORD`. Uploaded evidence lives in Neon PostgreSQL, so deployment does not remove it when the Render web service restarts.
 
 ## Responsible use
