@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Share a status ? Ase Naki?</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="page-shell">
+    <div class="container narrow-container">
+        <a class="back-link" th:href="@{/}">? Back to live reports</a>
+        <div class="page-heading">
+            <span class="eyebrow eyebrow-dark">Help your neighbours</span>
+            <h1>What is the utility status?</h1>
+            <p>Choose the current condition. Your report will expire automatically after 24 hours.</p>
+        </div>
+
+        <form class="panel form-stack report-form"
+              th:action="@{/reports}" th:object="${reportForm}"
+              method="post" enctype="multipart/form-data">
+            <div class="global-errors" th:if="${#fields.hasGlobalErrors()}">
+                <p th:each="error : ${#fields.globalErrors()}"
+                   th:text="${error}">Form error</p>
+            </div>
+
+            <div class="form-grid">
+                <label>
+                    <span>Area *</span>
+                    <select th:field="*{areaId}">
+                        <option value="">Choose your area</option>
+                        <option th:each="area : ${areas}"
+                                th:value="${area.id}"
+                                th:text="${area.displayName}">
+                            Mirpur 10
+                        </option>
+                    </select>
+                    <small class="field-error" th:errors="*{areaId}"></small>
+                </label>
+
+                <label>
+                    <span>Utility *</span>
+                    <select th:field="*{utilityTypeId}" data-utility-select>
+                        <option value="">Choose a utility</option>
+                        <option th:each="utility : ${utilities}"
+                                th:value="${utility.id}"
+                                th:data-statuses="${utility.allowedStatuses}"
+                                th:text="${utility.icon + '  ' + utility.name}">
+                            Electricity
+                        </option>
+                    </select>
+                    <small class="field-error" th:errors="*{utilityTypeId}"></small>
+                </label>
+            </div>
+
+            <label>
+                <span>Current status *</span>
+                <select th:field="*{status}" data-status-select>
+                    <option value="">Choose a status</option>
+                    <option th:each="status : ${statuses}"
+                            th:value="${status}"
+                            th:data-status="${status}"
+                            th:text="${status.label}">
+                        Available
+                    </option>
+                </select>
+                <small class="field-hint">The list adjusts to the selected utility.</small>
+                <small class="field-error" th:errors="*{status}"></small>
+            </label>
+
+            <label>
+                <span>Short description</span>
+                <textarea th:field="*{description}" rows="4"
+                          maxlength="500"
+                          placeholder="Example: Power went out after heavy rain near block C."></textarea>
+                <small class="field-error" th:errors="*{description}"></small>
+            </label>
+
+            <label class="upload-box">
+                <input type="file" th:field="*{evidence}"
+                       accept="image/jpeg,image/png,image/webp,application/pdf"
+                       data-file-input>
+                <span class="upload-icon">?</span>
+                <strong>Add photo or PDF evidence</strong>
+                <small data-file-label>JPG, PNG, WebP or PDF ? maximum 5 MB</small>
+                <small class="field-error" th:errors="*{evidence}"></small>
+            </label>
+
+            <div class="privacy-note">
+                <strong>Privacy reminder</strong>
+                <p>Do not upload faces, identity documents, phone numbers or private bills.</p>
+            </div>
+
+            <button class="btn btn-primary btn-large btn-block" type="submit">
+                Publish community report
+            </button>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

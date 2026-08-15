@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create account ? Ase Naki?</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="auth-body">
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="auth-shell">
+    <section class="auth-visual register-visual">
+        <div>
+            <span class="eyebrow">One useful report at a time</span>
+            <h1>Make your area easier to navigate.</h1>
+            <p>Your reports help students, families, workers and small businesses plan their day.</p>
+        </div>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card wide">
+            <span class="form-kicker">Join the community</span>
+            <h2>Create your account</h2>
+            <p class="muted">It takes less than a minute.</p>
+
+            <form class="form-stack" th:action="@{/register}"
+                  th:object="${registrationForm}" method="post">
+                <label>
+                    <span>Full name</span>
+                    <input type="text" th:field="*{fullName}"
+                           placeholder="Your name">
+                    <small class="field-error" th:errors="*{fullName}"></small>
+                </label>
+                <label>
+                    <span>Email address</span>
+                    <input type="email" th:field="*{email}"
+                           placeholder="you@example.com">
+                    <small class="field-error" th:errors="*{email}"></small>
+                </label>
+                <label>
+                    <span>Bangladesh mobile number</span>
+                    <input type="tel" th:field="*{phone}"
+                           placeholder="01712345678">
+                    <small class="field-hint">Format: 01XXXXXXXXX or +8801XXXXXXXXX</small>
+                    <small class="field-error" th:errors="*{phone}"></small>
+                </label>
+                <label>
+                    <span>Password</span>
+                    <input type="password" th:field="*{password}"
+                           placeholder="At least 8 characters">
+                    <small class="field-error" th:errors="*{password}"></small>
+                </label>
+                <label class="checkbox-row">
+                    <input type="checkbox" th:field="*{acceptedRules}">
+                    <span>I will share honest updates and respect community privacy.</span>
+                </label>
+                <small class="field-error" th:errors="*{acceptedRules}"></small>
+                <button class="btn btn-primary btn-block" type="submit">
+                    Create account
+                </button>
+            </form>
+            <p class="form-footer">
+                Already a member? <a th:href="@{/login}">Sign in</a>
+            </p>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

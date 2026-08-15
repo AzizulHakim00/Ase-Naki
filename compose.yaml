@@ -1,0 +1,29 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: asenaki
+      POSTGRES_USER: ase_naki_user
+      POSTGRES_PASSWORD: local_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ase_naki_user -d asenaki"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  app:
+    build: .
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: postgresql://ase_naki_user:local_password@database:5432/asenaki
+      APP_ADMIN_PASSWORD: Admin123!
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+volumes:
+  postgres_data:

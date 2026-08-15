@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Access denied ? Ase Naki?</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="page-shell">
+    <div class="container narrow-container">
+        <div class="empty-state panel">
+            <span>!</span>
+            <h1>That page is restricted</h1>
+            <p>Your account does not have permission to open it.</p>
+            <a class="btn btn-primary" th:href="@{/}">Return home</a>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

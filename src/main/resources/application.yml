@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: ase-naki
+  datasource:
+    url: jdbc:h2:file:./data/asenaki;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  thymeleaf:
+    cache: false
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+app:
+  admin:
+    password: ${APP_ADMIN_PASSWORD:Admin123!}
+  reports:
+    duplicate-window-minutes: 30
+    expiry-hours: 24
+    restored-votes-required: 3
