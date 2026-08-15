@@ -8,14 +8,6 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: DATABASE_URL
-        fromDatabase:
-          name: ase-naki-db
-          property: connectionString
+        sync: false
       - key: APP_ADMIN_PASSWORD
         generateValue: true
-
-databases:
-  - name: ase-naki-db
-    plan: free
-    databaseName: asenaki
-    user: ase_naki_user

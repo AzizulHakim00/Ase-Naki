@@ -133,16 +133,17 @@ All changing form requests use Spring Security CSRF protection.
 
 Tests cover startup, confidence boundaries, duplicate blocking, and the rule that reporters cannot vote on their own report.
 
-## Deploy to Render
+## Deploy with Render and Neon
 
 The repository includes `Dockerfile` and `render.yaml`.
 
-1. In Render, create a **Blueprint** and connect this GitHub repository.
-2. Render creates the web service and PostgreSQL database.
-3. Wait for `/actuator/health` to become healthy.
-4. Register a normal account from the live site.
+1. Create a PostgreSQL project in Neon and copy its pooled connection string.
+2. In Render, create a **Blueprint** and connect this GitHub repository.
+3. Enter the Neon connection string when Render asks for `DATABASE_URL`.
+4. Wait for `/actuator/health` to become healthy.
+5. Register a normal account from the live site.
 
-The Blueprint connects `SPRING_PROFILES_ACTIVE=prod`, `DATABASE_URL`, and a generated `APP_ADMIN_PASSWORD`. Uploaded evidence lives in PostgreSQL, so deployment does not remove it.
+The Blueprint connects `SPRING_PROFILES_ACTIVE=prod`, a secret `DATABASE_URL`, and a generated `APP_ADMIN_PASSWORD`. Uploaded evidence lives in Neon PostgreSQL, so deployment does not remove it when the Render web service restarts.
 
 ## Responsible use
 
