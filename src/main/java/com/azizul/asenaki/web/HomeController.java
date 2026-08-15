@@ -1,6 +1,7 @@
 package com.azizul.asenaki.web;
 
 import com.azizul.asenaki.report.ReportService;
+import com.azizul.asenaki.report.UtilityType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,7 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
         model.addAttribute("reports", reportService.getAllReports());
+        model.addAttribute("utilities", UtilityType.values());
         return "home";
     }
 }

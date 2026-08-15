@@ -6,8 +6,9 @@
 <header th:fragment="navbar" class="site-header">
     <nav class="container nav-wrap">
         <a class="brand" th:href="@{/}">
-            <img th:src="@{/images/app-icon.png}" alt="Ase Naki icon">
-            <span>
+            <img th:src="@{/images/app-icon.webp}" alt="Ase Naki icon"
+                 width="48" height="48">
+            <span class="brand-copy">
                 <strong>Ase Naki?</strong>
                 <small>Community utility updates</small>
             </span>
@@ -36,9 +37,29 @@
 </header>
 
 <footer th:fragment="footer" class="site-footer">
-    <div class="container">
-        <p class="mb-1"><strong>Ase Naki?</strong> — simple utility updates for Bangladesh.</p>
-        <small>Do not upload private documents or recognisable faces.</small>
+    <div class="container footer-grid">
+        <div>
+            <a class="brand footer-brand" th:href="@{/}">
+                <img th:src="@{/images/app-icon.webp}" alt="" width="44" height="44">
+                <span class="brand-copy"><strong>Ase Naki?</strong><small>Community utility updates</small></span>
+            </a>
+            <p>Simple, local utility information for communities across Bangladesh.</p>
+        </div>
+        <div>
+            <h3>Explore</h3>
+            <ul>
+                <li><a th:href="@{/}">Live reports</a></li>
+                <li><a th:href="@{/reports/add}">Share a status</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3>Safety reminder</h3>
+            <p>Share honest updates. Do not upload private documents or recognisable faces.</p>
+        </div>
+    </div>
+    <div class="container footer-bottom">
+        <span>Built with Spring Boot and Neon PostgreSQL.</span>
+        <span>Ase Naki? &copy; 2026</span>
     </div>
 </footer>
 

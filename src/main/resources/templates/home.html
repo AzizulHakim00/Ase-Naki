@@ -4,75 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ase Naki? | Utility reports</title>
-    <link rel="icon" type="image/png" th:href="@{/images/app-icon.png}">
+    <link rel="icon" type="image/webp" th:href="@{/images/app-icon.webp}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet"
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
           crossorigin="anonymous">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="preload" as="image" type="image/webp"
+          th:href="@{/images/ase-naki-hero.webp}" fetchpriority="high">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
 <header th:replace="~{fragments/layout :: navbar}"></header>
 
 <main>
-    <section class="hero-section">
-        <div class="container hero-grid">
-            <div>
-                <span class="eyebrow">Neighbour-powered updates</span>
-                <h1>Electricity, gas, water or internet — <span>ase naki?</span></h1>
-                <p>Check the latest report from your area, or sign in and share a quick update.</p>
-                <div class="d-flex flex-wrap gap-2">
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-copy">
+                <span class="eyebrow"><span class="live-dot"></span> Live community updates</span>
+                <h1>Is it available <em>in your area?</em></h1>
+                <p>Check electricity, gas, water and internet conditions—or help a neighbour with one quick report.</p>
+                <div class="hero-actions">
                     <a class="btn btn-brand btn-lg" th:href="@{/reports/add}">
-                        <i class="bi bi-plus-circle"></i> Add a report
+                        <i class="bi bi-plus-circle"></i> Share a status
                     </a>
                     <a class="btn btn-light btn-lg" href="#reports">
-                        View reports
+                        Browse reports <i class="bi bi-arrow-down"></i>
                     </a>
                 </div>
-            </div>
-            <div class="hero-icon-card">
-                <img th:src="@{/images/app-icon.png}" alt="Ase Naki app icon">
-                <h2>Simple community checking</h2>
-                <p class="mb-0">Choose an area, utility and current status.</p>
+                <div class="trust-row">
+                    <div class="trust-icon"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <strong>Neighbour-powered information</strong>
+                        <small>Simple reports from people in the community</small>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="reports" class="container section-space">
-        <div th:if="${param.logout}" class="alert alert-success">You signed out successfully.</div>
-        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-
-        <div class="section-heading">
-            <div>
-                <span class="eyebrow">Latest information</span>
-                <h2>Community reports</h2>
+    <section class="utility-strip" aria-label="Supported utilities">
+        <div class="container utility-grid">
+            <div class="utility-pill" th:each="utility : ${utilities}">
+                <span class="utility-strip-icon">
+                    <i th:class="${'bi ' + utility.iconClass}"></i>
+                </span>
+                <span th:text="${utility.label}">Electricity</span>
             </div>
-            <span class="report-count" th:text="${reports.size() + ' reports'}">0 reports</span>
         </div>
+    </section>
 
-        <div th:if="${reports.isEmpty()}" class="empty-state">
-            <i class="bi bi-inbox"></i>
-            <h3>No reports yet</h3>
-            <p>Be the first person to share an update.</p>
-        </div>
+    <section id="reports" class="section">
+        <div class="container">
+            <div th:if="${param.logout}" class="alert alert-success">You signed out successfully.</div>
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-        <div class="row g-4" th:unless="${reports.isEmpty()}">
-            <div class="col-md-6 col-lg-4" th:each="report : ${reports}">
-                <article class="report-card h-100">
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow eyebrow-dark">What neighbours see now</span>
+                    <h2>Live utility reports</h2>
+                    <p>Recent updates from covered areas across Bangladesh.</p>
+                </div>
+                <div class="mini-stats">
+                    <span><strong th:text="${reports.size()}">0</strong> recent reports</span>
+                    <span><strong th:text="${utilities.length}">5</strong> utility types</span>
+                </div>
+            </div>
+
+            <div th:if="${reports.isEmpty()}" class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <h3>No reports yet</h3>
+                <p>Be the first person to share an update.</p>
+            </div>
+
+            <div class="report-grid" th:unless="${reports.isEmpty()}">
+                <article class="report-card" th:each="report : ${reports}">
                     <div class="report-top">
                         <div class="utility-icon">
                             <i th:class="${'bi ' + report.utilityType.iconClass}"></i>
+                        </div>
+                        <div>
+                            <p class="utility-name" th:text="${report.utilityType.label}">Electricity</p>
+                            <h3 th:text="${report.area.name}">Mirpur 10</h3>
+                            <small th:text="${report.area.district}">Dhaka</small>
                         </div>
                         <span class="status-pill"
                               th:classappend="${report.status.cssClass}"
                               th:text="${report.status.label}">Available</span>
                     </div>
 
-                    <p class="utility-name" th:text="${report.utilityType.label}">Electricity</p>
-                    <h3 th:text="${report.area.name}">Mirpur 10</h3>
-                    <p class="text-secondary mb-2" th:text="${report.area.district}">Dhaka</p>
                     <p class="report-description" th:text="${report.description}"></p>
 
                     <div class="report-meta">
@@ -80,8 +101,12 @@
                         <span><i class="bi bi-clock"></i> <span th:text="${#temporals.format(report.reportedAt, 'dd MMM, hh:mm a')}"></span></span>
                     </div>
 
-                    <a class="stretched-link details-link"
-                       th:href="@{/reports/{id}(id=${report.id})}">View details</a>
+                    <div class="card-actions">
+                        <a class="btn btn-soft stretched-link"
+                           th:href="@{/reports/{id}(id=${report.id})}">
+                            View details <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
                 </article>
             </div>
         </div>
@@ -95,16 +120,10 @@
                     <h2>How it works</h2>
                 </div>
             </div>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="step-card"><span>1</span><h3>Check</h3><p>Read recent utility reports from different areas.</p></div>
-                </div>
-                <div class="col-md-4">
-                    <div class="step-card"><span>2</span><h3>Sign in</h3><p>Your account is protected with Spring Security.</p></div>
-                </div>
-                <div class="col-md-4">
-                    <div class="step-card"><span>3</span><h3>Share</h3><p>Add a short report and an optional evidence image.</p></div>
-                </div>
+            <div class="steps-grid">
+                <div class="step-card"><span>01</span><h3>Check your area</h3><p>Read recent utility reports from nearby communities.</p></div>
+                <div class="step-card"><span>02</span><h3>Sign in safely</h3><p>Your account is protected with Spring Security.</p></div>
+                <div class="step-card"><span>03</span><h3>Help a neighbour</h3><p>Share a short report and an optional evidence image.</p></div>
             </div>
         </div>
     </section>

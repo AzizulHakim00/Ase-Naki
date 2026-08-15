@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Register | Ase Naki?</title>
-    <link rel="icon" type="image/png" th:href="@{/images/app-icon.png}">
+    <link rel="icon" type="image/webp" th:href="@{/images/app-icon.webp}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet"
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
@@ -13,73 +13,83 @@
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
+<body class="auth-body">
 <header th:replace="~{fragments/layout :: navbar}"></header>
 
-<main class="container form-page">
-    <div class="form-card form-card-wide">
-        <div class="form-title">
-            <img th:src="@{/images/app-icon.png}" alt="Ase Naki icon">
-            <div>
-                <span class="eyebrow">Join the community</span>
-                <h1>Create account</h1>
-            </div>
+<main class="auth-shell">
+    <section class="auth-visual register-visual">
+        <div>
+            <span class="eyebrow"><span class="live-dot"></span> Join your community</span>
+            <h1>One small report can help an entire neighbourhood.</h1>
+            <p>Create a free account and share useful utility updates safely.</p>
         </div>
+    </section>
 
-        <form th:action="@{/register}" th:object="${form}" method="post">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label" for="name">Full name</label>
-                    <input class="form-control" id="name" type="text" th:field="*{name}">
-                    <div class="field-error" th:errors="*{name}"></div>
-                </div>
+    <section class="auth-panel">
+        <div class="auth-card auth-card-wide">
+            <span class="form-kicker">Create your account</span>
+            <h2>Join Ase Naki?</h2>
+            <p class="muted">Only a few simple details are needed.</p>
 
-                <div class="col-md-6">
-                    <label class="form-label" for="email">Email</label>
-                    <input class="form-control" id="email" type="email" th:field="*{email}">
-                    <div class="field-error" th:errors="*{email}"></div>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label" for="phone">Bangladesh mobile</label>
-                    <input class="form-control" id="phone" type="text"
-                           th:field="*{phone}" placeholder="01700000000">
-                    <div class="field-error" th:errors="*{phone}"></div>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label" for="password">Password</label>
-                    <input class="form-control" id="password" type="password" th:field="*{password}">
-                    <div class="field-error" th:errors="*{password}"></div>
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label" for="address">Address (optional)</label>
-                    <input class="form-control" id="address" type="text" th:field="*{address}">
-                    <div class="field-error" th:errors="*{address}"></div>
-                </div>
-
-                <div class="col-12">
-                    <div class="form-check">
-                        <input class="form-check-input" id="acceptedRules"
-                               type="checkbox" th:field="*{acceptedRules}">
-                        <label class="form-check-label" for="acceptedRules">
-                            I will share honest reports and safe images.
-                        </label>
+            <form th:action="@{/register}" th:object="${form}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="name">Full name</label>
+                        <input class="form-control" id="name" type="text"
+                               autocomplete="name" th:field="*{name}">
+                        <div class="field-error" th:errors="*{name}"></div>
                     </div>
-                    <div class="field-error" th:errors="*{acceptedRules}"></div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" id="email" type="email"
+                               autocomplete="email" th:field="*{email}">
+                        <div class="field-error" th:errors="*{email}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="phone">Bangladesh mobile</label>
+                        <input class="form-control" id="phone" type="tel"
+                               autocomplete="tel" th:field="*{phone}" placeholder="01700000000">
+                        <div class="field-error" th:errors="*{phone}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" id="password" type="password"
+                               autocomplete="new-password" th:field="*{password}">
+                        <div class="field-error" th:errors="*{password}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label" for="address">Address (optional)</label>
+                        <input class="form-control" id="address" type="text"
+                               autocomplete="street-address" th:field="*{address}">
+                        <div class="field-error" th:errors="*{address}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" id="acceptedRules"
+                                   type="checkbox" th:field="*{acceptedRules}">
+                            <label class="form-check-label" for="acceptedRules">
+                                I will share honest reports and safe images.
+                            </label>
+                        </div>
+                        <div class="field-error" th:errors="*{acceptedRules}"></div>
+                    </div>
                 </div>
-            </div>
 
-            <button class="btn btn-brand w-100 mt-4" type="submit">Register</button>
-        </form>
+                <button class="btn btn-brand btn-lg w-100 mt-4" type="submit">
+                    Create account
+                </button>
+            </form>
 
-        <p class="text-center mt-4 mb-0">
-            Already registered? <a th:href="@{/login}">Sign in</a>
-        </p>
-    </div>
+            <p class="form-footer">
+                Already registered? <a th:href="@{/login}">Sign in</a>
+            </p>
+        </div>
+    </section>
 </main>
-
-<footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
 </html>
