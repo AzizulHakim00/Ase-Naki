@@ -20,10 +20,11 @@ class MonitoringControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         verify(refreshService, never()).refreshAll();
+        verify(refreshService, never()).refreshIfDue();
     }
 
     @Test
-    void correctSecretTriggersRefresh() {
+    void correctSecretTriggersForcedRefresh() {
         var refreshService = mock(MonitoringRefreshService.class);
         var controller = new MonitoringController(refreshService, "correct-secret");
 
@@ -31,16 +32,30 @@ class MonitoringControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         verify(refreshService).refreshAll();
+        verify(refreshService, never()).refreshIfDue();
     }
 
     @Test
-    void blankConfiguredSecretAlwaysRejectsRequests() {
+    void missingSecretUsesRateLimitedRefresh() {
+        var refreshService = mock(MonitoringRefreshService.class);
+        var controller = new MonitoringController(refreshService, "correct-secret");
+
+        var response = controller.refresh(null);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(refreshService).refreshIfDue();
+        verify(refreshService, never()).refreshAll();
+    }
+
+    @Test
+    void blankConfiguredSecretStillAllowsRateLimitedRefresh() {
         var refreshService = mock(MonitoringRefreshService.class);
         var controller = new MonitoringController(refreshService, "");
 
-        var response = controller.refresh("");
+        var response = controller.refresh(null);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(refreshService).refreshIfDue();
         verify(refreshService, never()).refreshAll();
     }
 }

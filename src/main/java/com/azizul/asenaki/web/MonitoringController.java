@@ -27,6 +27,11 @@ public class MonitoringController {
     public ResponseEntity<Void> refresh(
             @RequestHeader(value = "X-Monitoring-Secret", required = false)
             String suppliedSecret) {
+        if (suppliedSecret == null || suppliedSecret.isBlank()) {
+            refreshService.refreshIfDue();
+            return ResponseEntity.noContent().build();
+        }
+
         if (!validSecret(suppliedSecret)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -36,7 +41,7 @@ public class MonitoringController {
     }
 
     private boolean validSecret(String suppliedSecret) {
-        if (refreshSecret.isBlank() || suppliedSecret == null) {
+        if (refreshSecret.isBlank()) {
             return false;
         }
         return MessageDigest.isEqual(

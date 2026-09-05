@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MonitoringRefreshService {
 
+    private static final int PUBLIC_REFRESH_COOLDOWN_MINUTES = 20;
+
     private final PowerGridService powerGridService;
     private final CloudflareRadarService cloudflareRadarService;
     private final IodaService iodaService;
@@ -21,6 +23,29 @@ public class MonitoringRefreshService {
 
     @Transactional
     public void refreshAll() {
+        performRefresh();
+    }
+
+    @Transactional
+    public synchronized void refreshIfDue() {
+        LocalDateTime cutoff = LocalDateTime.now()
+                .minusMinutes(PUBLIC_REFRESH_COOLDOWN_MINUTES);
+
+        boolean recentlyRefreshed = internetStatusSnapshotRepository
+                .findTopByOrderByCheckedAtDesc()
+                .map(InternetStatusSnapshot::getCheckedAt)
+                .filter(checkedAt -> checkedAt != null)
+                .map(checkedAt -> checkedAt.isAfter(cutoff))
+                .orElse(false);
+
+        if (recentlyRefreshed) {
+            return;
+        }
+
+        performRefresh();
+    }
+
+    private void performRefresh() {
         powerGridService.fetchLatest().ifPresent(powerSnapshotRepository::save);
 
         ProviderSignal cloudflare = cloudflareRadarService.checkBangladesh();
