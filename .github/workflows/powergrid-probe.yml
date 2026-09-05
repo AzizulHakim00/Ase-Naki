@@ -1,0 +1,35 @@
+name: Power Grid connectivity probe
+
+on:
+  push:
+    branches:
+      - diagnostic/powergrid-connectivity
+    paths:
+      - ".github/workflows/powergrid-probe.yml"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Power Grid endpoints
+        shell: bash
+        run: |
+          set +e
+          for url in \
+            "https://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed" \
+            "https://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed?page=1"; do
+            echo "=== $url ==="
+            curl -L --connect-timeout 10 --max-time 45 \
+              --retry 2 --retry-delay 3 \
+              -A "Mozilla/5.0 Ase-Naki-Monitor/1.0" \
+              -o /tmp/powergrid.html \
+              -w "HTTP=%{http_code} TIME=%{time_total}s BYTES=%{size_download}\n" \
+              "$url"
+            code=$?
+            echo "curl_exit=$code"
+            if [ "$code" -eq 0 ]; then
+              grep -o "05-09-2026" /tmp/powergrid.html | head -1 || true
+              wc -c /tmp/powergrid.html
+            fi
+          done
+          exit 0
