@@ -43,7 +43,8 @@ The project intentionally avoids IoT devices, machine learning, paid APIs, SMS, 
 - Automatic national power-status collection
 - Automatic Internet-status checks using IODA and optional Cloudflare Radar
 - Persisted monitoring snapshots with graceful unavailable states
-- Protected monitoring-refresh endpoint for GitHub Actions
+- Rate-limited monitoring-refresh endpoint for GitHub Actions
+- Optional secret-authenticated forced refresh for maintenance
 - H2 database for local classroom use
 - Neon PostgreSQL for the deployed application
 - Responsive Bootstrap interface and Bootstrap Icons
@@ -99,7 +100,7 @@ macOS or Linux:
 
 Open `http://localhost:8080`.
 
-The application starts even when no Cloudflare token or refresh secret is configured. In that case Cloudflare monitoring is shown as unavailable and the protected refresh endpoint rejects requests until a secret is configured.
+The application starts even when no Cloudflare token or refresh secret is configured. Cloudflare monitoring is shown as unavailable when no token is present. The normal automation endpoint still works without a secret but is protected by a database-backed 20-minute cooldown so repeated calls do not repeatedly hit external providers.
 
 ## Demo login
 
@@ -117,9 +118,9 @@ The application starts even when no Cloudflare token or refresh secret is config
 | Report details | `/reports/{id}` | Public |
 | Add report and image | `/reports/add` | Signed-in user |
 | Health check | `/actuator/health` | Public |
-| Monitoring refresh | `/internal/monitoring/refresh` | Secret-protected automation |
+| Monitoring refresh | `/internal/monitoring/refresh` | Public but rate-limited; optional secret can force refresh |
 
-Spring Security automatically adds CSRF protection to normal changing form requests. CSRF is ignored only for the monitoring automation endpoint, which requires its own secret header.
+Spring Security automatically adds CSRF protection to normal changing form requests. CSRF is ignored only for the monitoring automation endpoint. Calls without a secret can refresh only when the latest saved Internet snapshot is at least 20 minutes old. If a secret header is supplied, it must match the configured `MONITORING_REFRESH_SECRET`; an incorrect supplied secret is rejected.
 
 ## Automatic monitoring behavior
 
@@ -175,30 +176,22 @@ Both sources unavailable
 
 If one source is unavailable and the other explicitly reports normal, the page clearly states that only the available source was checked. Provider failure is never silently treated as a healthy signal.
 
-## Manually refresh monitoring data
+## Refresh monitoring data
 
-Set a local secret before starting the app:
-
-Windows PowerShell:
-
-```powershell
-$env:MONITORING_REFRESH_SECRET="replace-with-a-long-random-secret"
-```
-
-macOS/Linux:
+The normal refresh call needs no secret:
 
 ```bash
-export MONITORING_REFRESH_SECRET="replace-with-a-long-random-secret"
+curl -X POST http://localhost:8080/internal/monitoring/refresh
 ```
 
-Then call:
+It returns HTTP `204 No Content`. If a monitoring snapshot was saved within the previous 20 minutes, the call returns successfully without contacting the external providers again.
+
+For maintenance, you can optionally configure `MONITORING_REFRESH_SECRET` and supply it to force an immediate refresh even inside the cooldown window:
 
 ```bash
 curl -X POST http://localhost:8080/internal/monitoring/refresh \
-  -H "X-Monitoring-Secret: replace-with-a-long-random-secret"
+  -H "X-Monitoring-Secret: your-secret"
 ```
-
-A successful refresh returns HTTP `204 No Content`.
 
 ## Run tests
 
@@ -206,7 +199,7 @@ A successful refresh returns HTTP `204 No Content`.
 ./mvnw verify
 ```
 
-Tests cover application startup, form validation, database behavior, monitoring aggregation, provider parsing, refresh persistence, and refresh-secret validation. Provider tests use local fixtures and do not require live Internet access.
+Tests cover application startup, form validation, database behavior, monitoring aggregation, provider parsing, refresh persistence, the refresh cooldown, and optional refresh-secret behavior. Provider tests use local fixtures and do not require live Internet access.
 
 ## Deploy with Render and Neon for $0/month
 
@@ -215,15 +208,13 @@ The repository includes `Dockerfile`, `render.yaml`, and a scheduled GitHub Acti
 1. Create a Neon PostgreSQL project and copy its pooled connection string.
 2. Create/update the Render service from this repository.
 3. Set `DATABASE_URL` in Render.
-4. Set `CLOUDFLARE_API_TOKEN` in Render if you want Cloudflare Radar monitoring. The rest of the application works without it.
-5. Set a long random value for `MONITORING_REFRESH_SECRET` in Render. If the Blueprint generated one, copy that generated value.
-6. Wait for `/actuator/health` to return `UP`.
-7. In GitHub repository Actions secrets, add:
-   - `ASE_NAKI_REFRESH_URL` = `https://YOUR-RENDER-SERVICE/internal/monitoring/refresh`
-   - `MONITORING_REFRESH_SECRET` = exactly the same secret used by Render.
-8. Run the **Refresh monitoring data** workflow manually once to verify the setup.
+4. Set `CLOUDFLARE_API_TOKEN` in Render only if you want Cloudflare Radar monitoring. The rest of the application works without it.
+5. Wait for `/actuator/health` to return `UP`.
+6. Keep the **Refresh monitoring data** GitHub Actions workflow enabled.
 
-After the workflow is on the default branch, GitHub Actions triggers the endpoint approximately every 30 minutes. This wakes a sleeping Render Free web service, refreshes external monitoring data, saves successful snapshots to Neon, and then allows the service to sleep again when unused.
+No GitHub Actions secret is required for scheduled monitoring. The workflow calls the deployed refresh endpoint approximately every 30 minutes. The database-backed cooldown protects the free external sources from repeated polling. The call also wakes a sleeping Render Free web service, refreshes data when due, saves snapshots to Neon, and then allows the service to sleep again when unused.
+
+The current workflow targets the project's production service at `https://ase-naki-x5ie.onrender.com`. If you deploy your own fork under a different Render URL, update that URL in `.github/workflows/monitoring-refresh.yml`.
 
 `DatabaseConfig` accepts Neon's normal `postgresql://user:password@host/database` connection string and converts it to the JDBC format used by Spring Boot.
 
@@ -232,7 +223,7 @@ After the workflow is on the default branch, GitHub Actions triggers the endpoin
 | Variable | Required? | Purpose |
 |---|---|---|
 | `DATABASE_URL` | Yes in production | Neon PostgreSQL connection |
-| `MONITORING_REFRESH_SECRET` | Yes for automatic refresh | Protects the refresh endpoint |
+| `MONITORING_REFRESH_SECRET` | No | Optional maintenance secret for forcing a refresh inside the cooldown |
 | `CLOUDFLARE_API_TOKEN` | No | Enables Cloudflare Radar outage checks |
 | `APP_ADMIN_PASSWORD` | Existing deployment setting | Seed/admin account password |
 
