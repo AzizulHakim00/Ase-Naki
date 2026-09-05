@@ -2,7 +2,9 @@ package com.azizul.asenaki.monitoring.external;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.HexFormat;
 import org.junit.jupiter.api.Test;
 
 class PowerGridServiceTest {
@@ -48,5 +50,17 @@ class PowerGridServiceTest {
                 html, LocalDateTime.of(2026, 9, 6, 1, 0));
 
         assertThat(snapshot).isEmpty();
+    }
+
+    @Test
+    void bundledPowerGridIntermediateCaHasExpectedFingerprint() throws Exception {
+        var certificate = PowerGridService.loadPinnedIntermediateCertificate();
+        byte[] fingerprint = MessageDigest.getInstance("SHA-256")
+                .digest(certificate.getEncoded());
+
+        assertThat(HexFormat.of().withUpperCase().formatHex(fingerprint))
+                .isEqualTo("58F0F756758E93FB0B6B17A36A3850475D68BC0D6C99CBE22A1B18351C89FF1F");
+        assertThat(certificate.getSubjectX500Principal().getName())
+                .contains("SSL2BUY EMEA RSA Domain Validation Secure Server CA");
     }
 }
