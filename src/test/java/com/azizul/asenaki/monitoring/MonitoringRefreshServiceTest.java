@@ -72,4 +72,60 @@ class MonitoringRefreshServiceTest {
         verify(powerRepository, never()).save(any(PowerSnapshot.class));
         verify(internetRepository).save(any(InternetStatusSnapshot.class));
     }
+
+    @Test
+    void refreshIfDueSkipsExternalCallsWhenRecentSnapshotExists() {
+        var powerGrid = mock(PowerGridService.class);
+        var cloudflare = mock(CloudflareRadarService.class);
+        var ioda = mock(IodaService.class);
+        var powerRepository = mock(PowerSnapshotRepository.class);
+        var internetRepository = mock(InternetStatusSnapshotRepository.class);
+
+        InternetStatusSnapshot recent = new InternetStatusSnapshot();
+        recent.setCheckedAt(LocalDateTime.now().minusMinutes(5));
+        when(internetRepository.findTopByOrderByCheckedAtDesc())
+                .thenReturn(Optional.of(recent));
+
+        var service = new MonitoringRefreshService(
+                powerGrid, cloudflare, ioda,
+                powerRepository, internetRepository,
+                new MonitoringAggregationService());
+
+        service.refreshIfDue();
+
+        verify(powerGrid, never()).fetchLatest();
+        verify(cloudflare, never()).checkBangladesh();
+        verify(ioda, never()).checkBangladesh();
+    }
+
+    @Test
+    void refreshIfDueRefreshesWhenLatestSnapshotIsStale() {
+        var powerGrid = mock(PowerGridService.class);
+        var cloudflare = mock(CloudflareRadarService.class);
+        var ioda = mock(IodaService.class);
+        var powerRepository = mock(PowerSnapshotRepository.class);
+        var internetRepository = mock(InternetStatusSnapshotRepository.class);
+
+        InternetStatusSnapshot stale = new InternetStatusSnapshot();
+        stale.setCheckedAt(LocalDateTime.now().minusMinutes(30));
+        when(internetRepository.findTopByOrderByCheckedAtDesc())
+                .thenReturn(Optional.of(stale));
+        when(powerGrid.fetchLatest()).thenReturn(Optional.empty());
+        when(cloudflare.checkBangladesh()).thenReturn(
+                ProviderSignal.unavailable("Cloudflare unavailable"));
+        when(ioda.checkBangladesh()).thenReturn(
+                new ProviderSignal(MonitoringState.NORMAL, "IODA normal", null));
+
+        var service = new MonitoringRefreshService(
+                powerGrid, cloudflare, ioda,
+                powerRepository, internetRepository,
+                new MonitoringAggregationService());
+
+        service.refreshIfDue();
+
+        verify(powerGrid).fetchLatest();
+        verify(cloudflare).checkBangladesh();
+        verify(ioda).checkBangladesh();
+        verify(internetRepository).save(any(InternetStatusSnapshot.class));
+    }
 }
