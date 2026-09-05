@@ -11,12 +11,10 @@ jobs:
     steps:
       - name: Trigger monitoring refresh
         env:
-          REFRESH_URL: ${{ secrets.ASE_NAKI_REFRESH_URL }}
           REFRESH_SECRET: ${{ secrets.MONITORING_REFRESH_SECRET }}
         run: |
-          test -n "$REFRESH_URL"
           test -n "$REFRESH_SECRET"
           curl --fail --show-error --silent \
             --retry 2 --retry-delay 10 \
-            -X POST "$REFRESH_URL" \
+            -X POST "https://ase-naki-x5ie.onrender.com/internal/monitoring/refresh" \
             -H "X-Monitoring-Secret: $REFRESH_SECRET"
