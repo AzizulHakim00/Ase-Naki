@@ -11,33 +11,15 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect Power Grid TLS chain
+      - name: Fetch missing intermediate certificate
         shell: bash
         run: |
-          set +e
-          echo "=== server certificate chain ==="
-          timeout 20 openssl s_client \
-            -connect erp.powergrid.gov.bd:443 \
-            -servername erp.powergrid.gov.bd \
-            -showcerts </dev/null 2>&1 | \
-            grep -E "subject=|issuer=|Verify return code|verify error" || true
-
-          echo "=== leaf certificate details ==="
-          timeout 20 openssl s_client \
-            -connect erp.powergrid.gov.bd:443 \
-            -servername erp.powergrid.gov.bd </dev/null 2>/dev/null | \
-            openssl x509 -noout -subject -issuer -dates -ext authorityInfoAccess || true
-
-          echo "=== insecure fetch proves server content availability ==="
-          curl -k -L --connect-timeout 10 --max-time 45 \
-            --retry 2 --retry-delay 3 \
-            -A "Mozilla/5.0 Ase-Naki-Monitor/1.0" \
-            -o /tmp/powergrid.html \
-            -w "HTTP=%{http_code} TIME=%{time_total}s BYTES=%{size_download}\n" \
-            "https://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed"
-          code=$?
-          echo "curl_exit=$code"
-          if [ "$code" -eq 0 ]; then
-            grep -o "05-09-2026" /tmp/powergrid.html | head -1 || true
-          fi
-          exit 0
+          set -e
+          curl -L --fail --show-error --silent \
+            "http://crt.sectigo.com/SSL2BUYEMEARSADomainValidationSecureServerCA.crt" \
+            -o /tmp/intermediate.crt
+          echo "=== intermediate certificate details ==="
+          openssl x509 -inform DER -in /tmp/intermediate.crt \
+            -noout -subject -issuer -dates -fingerprint -sha256
+          echo "=== PEM ==="
+          openssl x509 -inform DER -in /tmp/intermediate.crt -outform PEM
