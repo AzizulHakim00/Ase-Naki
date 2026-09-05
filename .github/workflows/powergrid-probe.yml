@@ -15,6 +15,7 @@ jobs:
         shell: bash
         run: |
           set +e
+          echo "Power Grid diagnostic from GitHub-hosted runner"
           for url in \
             "https://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed" \
             "https://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed?page=1"; do
