@@ -1,19 +1,27 @@
 package com.azizul.asenaki.monitoring.external;
 
 import com.azizul.asenaki.monitoring.PowerSnapshot;
+import java.io.InputStream;
+import java.net.http.HttpClient;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -22,6 +30,8 @@ public class PowerGridService {
 
     private static final Logger log = LoggerFactory.getLogger(PowerGridService.class);
     private static final String SOURCE = "Power Grid Bangladesh PLC";
+    private static final String INTERMEDIATE_CA =
+            "certificates/powergrid-intermediate.pem";
     private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("dd-MM-uuuu");
 
@@ -40,10 +50,15 @@ public class PowerGridService {
                     .accept(MediaType.TEXT_HTML)
                     .retrieve()
                     .body(String.class);
-            return parseLatest(html, LocalDateTime.now());
+            Optional<PowerSnapshot> snapshot = parseLatest(html, LocalDateTime.now());
+            snapshot.ifPresent(value -> log.info(
+                    "Power Grid Bangladesh refreshed: observedAt={}, demandMw={}, supplyMw={}, loadSheddingMw={}",
+                    value.getObservedAt(), value.getDemandMw(),
+                    value.getSupplyMw(), value.getLoadSheddingMw()));
+            return snapshot;
         } catch (RuntimeException exception) {
-            log.warn("Power Grid Bangladesh data refresh failed: {}",
-                    exception.getClass().getSimpleName());
+            log.warn("Power Grid Bangladesh data refresh failed: {} ({})",
+                    exception.getClass().getSimpleName(), safeMessage(exception));
             return Optional.empty();
         }
     }
@@ -80,6 +95,17 @@ public class PowerGridService {
         return Optional.empty();
     }
 
+    static X509Certificate loadPinnedIntermediateCertificate() {
+        try (InputStream input = new ClassPathResource(INTERMEDIATE_CA).getInputStream()) {
+            return (X509Certificate) CertificateFactory
+                    .getInstance("X.509")
+                    .generateCertificate(input);
+        } catch (Exception exception) {
+            throw new IllegalStateException(
+                    "Could not load the pinned Power Grid intermediate CA", exception);
+        }
+    }
+
     private LocalDateTime parseObservedAt(LocalDate date, String timeToken) {
         if (timeToken.startsWith("24:")) {
             return LocalDateTime.of(date.plusDays(1), LocalTime.MIDNIGHT);
@@ -96,10 +122,42 @@ public class PowerGridService {
     }
 
     private RestClient createRestClient() {
-        SimpleClientHttpRequestFactory requestFactory =
-                new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(Duration.ofSeconds(5));
-        requestFactory.setReadTimeout(Duration.ofSeconds(8));
+        HttpClient httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(8))
+                .sslContext(createPowerGridSslContext())
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+        JdkClientHttpRequestFactory requestFactory =
+                new JdkClientHttpRequestFactory(httpClient);
+        requestFactory.setReadTimeout(Duration.ofSeconds(12));
         return RestClient.builder().requestFactory(requestFactory).build();
+    }
+
+    private SSLContext createPowerGridSslContext() {
+        try {
+            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            trustStore.load(null, null);
+            trustStore.setCertificateEntry(
+                    "powergrid-intermediate", loadPinnedIntermediateCertificate());
+
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                    TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(trustStore);
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
+            return sslContext;
+        } catch (Exception exception) {
+            throw new IllegalStateException(
+                    "Could not configure Power Grid TLS validation", exception);
+        }
+    }
+
+    private String safeMessage(RuntimeException exception) {
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) {
+            return "no detail";
+        }
+        return message.length() > 180 ? message.substring(0, 180) : message;
     }
 }
