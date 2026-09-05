@@ -11,3 +11,7 @@ services:
         sync: false
       - key: APP_ADMIN_PASSWORD
         generateValue: true
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: MONITORING_REFRESH_SECRET
+        generateValue: true

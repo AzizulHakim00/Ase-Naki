@@ -29,8 +29,14 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/reports/{id:[0-9]+}", "/evidence/**"
                         ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/internal/monitoring/refresh"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/internal/monitoring/refresh"))
                 .formLogin(form -> form
                         .loginPage("/login")
                         .usernameParameter("email")

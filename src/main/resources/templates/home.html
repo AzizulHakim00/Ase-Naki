@@ -55,6 +55,113 @@
         </div>
     </section>
 
+    <section class="section" aria-labelledby="automatic-status-title">
+        <div class="container">
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow eyebrow-dark">Automatic monitoring</span>
+                    <h2 id="automatic-status-title">Bangladesh service status</h2>
+                    <p>Independent public signals supplement the community reports below.</p>
+                </div>
+            </div>
+
+            <div class="report-grid">
+                <article class="report-card">
+                    <div class="report-top">
+                        <div class="utility-icon">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </div>
+                        <div>
+                            <p class="utility-name">Electricity</p>
+                            <h3>National Grid</h3>
+                            <small>Power Grid Bangladesh PLC</small>
+                        </div>
+                        <span th:if="${powerStatus.isPresent()}"
+                              class="status-pill"
+                              th:classappend="${powerStatus.get().loadSheddingMw > 0 ? 'status-warning' : 'status-available'}"
+                              th:text="${powerStatus.get().loadSheddingMw > 0 ? 'Load shedding' : 'Grid balanced'}">Grid balanced</span>
+                        <span th:unless="${powerStatus.isPresent()}"
+                              class="status-pill status-warning">No data</span>
+                    </div>
+
+                    <div th:if="${powerStatus.isPresent()}">
+                        <p class="report-description">
+                            Demand <strong th:text="${#numbers.formatInteger(powerStatus.get().demandMw, 1, 'COMMA') + ' MW'}">0 MW</strong>,
+                            supply <strong th:text="${#numbers.formatInteger(powerStatus.get().supplyMw, 1, 'COMMA') + ' MW'}">0 MW</strong>,
+                            with <strong th:text="${#numbers.formatInteger(powerStatus.get().loadSheddingMw, 1, 'COMMA') + ' MW'}">0 MW</strong>
+                            of reported load shedding.
+                        </p>
+                        <div class="report-meta">
+                            <span><i class="bi bi-clock"></i>
+                                <span th:text="${#temporals.format(powerStatus.get().observedAt, 'dd MMM, hh:mm a')}">06 Sep, 01:00 AM</span>
+                            </span>
+                            <span><i class="bi bi-database-check"></i> Public grid data</span>
+                        </div>
+                        <div class="report-meta" th:if="${!powerHistory.isEmpty()}" style="margin-top: 12px;">
+                            <span th:each="snapshot, stat : ${powerHistory}"
+                                  th:if="${stat.index < 5}">
+                                <i class="bi bi-activity"></i>
+                                <span th:text="${#temporals.format(snapshot.observedAt, 'HH:mm') + ' · ' + snapshot.loadSheddingMw + ' MW shed'}">20:00 · 0 MW shed</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div th:unless="${powerStatus.isPresent()}">
+                        <p class="report-description">No recent automatic reading is available. Community reports below still work normally.</p>
+                        <div class="report-meta">
+                            <span><i class="bi bi-info-circle"></i> The last good reading will appear here after a successful refresh.</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="report-card">
+                    <div class="report-top">
+                        <div class="utility-icon">
+                            <i class="bi bi-globe2"></i>
+                        </div>
+                        <div>
+                            <p class="utility-name">Internet</p>
+                            <h3>Bangladesh network status</h3>
+                            <small>Cloudflare Radar + IODA</small>
+                        </div>
+                        <span th:if="${internetStatus.isPresent()}"
+                              class="status-pill"
+                              th:classappend="${internetStatus.get().overallState.cssClass}"
+                              th:text="${internetStatus.get().overallState.label}">Normal</span>
+                        <span th:unless="${internetStatus.isPresent()}"
+                              class="status-pill status-warning">No data</span>
+                    </div>
+
+                    <div th:if="${internetStatus.isPresent()}">
+                        <p class="report-description" th:text="${internetStatus.get().summary}">No major internet disruption detected.</p>
+                        <div class="report-meta">
+                            <span><i class="bi bi-cloud-check"></i>
+                                Cloudflare: <strong th:text="${internetStatus.get().cloudflareState.label}">Normal</strong>
+                            </span>
+                            <span><i class="bi bi-diagram-3"></i>
+                                IODA: <strong th:text="${internetStatus.get().iodaState.label}">Normal</strong>
+                            </span>
+                            <span th:if="${internetStatus.get().affectedNetwork != null}">
+                                <i class="bi bi-router"></i>
+                                <span th:text="${internetStatus.get().affectedNetwork}">Affected network</span>
+                            </span>
+                            <span><i class="bi bi-clock"></i>
+                                <span th:text="${#temporals.format(internetStatus.get().checkedAt, 'dd MMM, hh:mm a')}">06 Sep, 01:00 AM</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div th:unless="${internetStatus.isPresent()}">
+                        <p class="report-description">Live monitoring data is temporarily unavailable. This does not mean the internet is normal or disrupted.</p>
+                        <div class="report-meta">
+                            <span><i class="bi bi-shield-check"></i> A failed provider check is never treated as a healthy signal.</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
     <section id="reports" class="section">
         <div class="container">
             <div th:if="${param.logout}" class="alert alert-success">You signed out successfully.</div>
