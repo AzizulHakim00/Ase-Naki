@@ -11,41 +11,33 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe Power Grid endpoints
+      - name: Inspect Power Grid TLS chain
         shell: bash
         run: |
           set +e
-          HTTPS_URL="https://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed"
-          HTTP_URL="http://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed"
+          echo "=== server certificate chain ==="
+          timeout 20 openssl s_client \
+            -connect erp.powergrid.gov.bd:443 \
+            -servername erp.powergrid.gov.bd \
+            -showcerts </dev/null 2>&1 | \
+            grep -E "subject=|issuer=|Verify return code|verify error" || true
 
-          echo "=== verified HTTPS ==="
-          curl -L --connect-timeout 10 --max-time 30 \
-            -A "Mozilla/5.0 Ase-Naki-Monitor/1.0" \
-            -o /tmp/verified.html \
-            -w "HTTP=%{http_code} TIME=%{time_total}s BYTES=%{size_download}\n" \
-            "$HTTPS_URL"
-          echo "verified_exit=$?"
+          echo "=== leaf certificate details ==="
+          timeout 20 openssl s_client \
+            -connect erp.powergrid.gov.bd:443 \
+            -servername erp.powergrid.gov.bd </dev/null 2>/dev/null | \
+            openssl x509 -noout -subject -issuer -dates -ext authorityInfoAccess || true
 
-          echo "=== insecure HTTPS diagnostic only ==="
+          echo "=== insecure fetch proves server content availability ==="
           curl -k -L --connect-timeout 10 --max-time 45 \
             --retry 2 --retry-delay 3 \
             -A "Mozilla/5.0 Ase-Naki-Monitor/1.0" \
-            -o /tmp/insecure.html \
+            -o /tmp/powergrid.html \
             -w "HTTP=%{http_code} TIME=%{time_total}s BYTES=%{size_download}\n" \
-            "$HTTPS_URL"
-          insecure_code=$?
-          echo "insecure_exit=$insecure_code"
-          if [ "$insecure_code" -eq 0 ]; then
-            grep -o "05-09-2026" /tmp/insecure.html | head -1 || true
-            wc -c /tmp/insecure.html
+            "https://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed"
+          code=$?
+          echo "curl_exit=$code"
+          if [ "$code" -eq 0 ]; then
+            grep -o "05-09-2026" /tmp/powergrid.html | head -1 || true
           fi
-
-          echo "=== plain HTTP without redirects ==="
-          curl --connect-timeout 10 --max-time 20 \
-            -A "Mozilla/5.0 Ase-Naki-Monitor/1.0" \
-            -D /tmp/http.headers -o /tmp/http.body \
-            -w "HTTP=%{http_code} TIME=%{time_total}s BYTES=%{size_download}\n" \
-            "$HTTP_URL"
-          echo "http_exit=$?"
-          head -20 /tmp/http.headers || true
           exit 0
