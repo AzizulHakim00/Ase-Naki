@@ -10,3 +10,9 @@ spring:
 app:
   admin:
     password: TestAdmin123!
+  monitoring:
+    power-grid-url: https://example.test/power
+    ioda-url: https://example.test/ioda
+    cloudflare-url: https://example.test/cloudflare
+    cloudflare-token:
+    refresh-secret: test-refresh-secret
