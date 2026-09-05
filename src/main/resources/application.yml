@@ -30,3 +30,9 @@ management:
 app:
   admin:
     password: ${APP_ADMIN_PASSWORD:Admin123!}
+  monitoring:
+    power-grid-url: https://erp.powergrid.gov.bd/web/generations/view_demand_supply_loadshed?page=1
+    ioda-url: https://api.ioda.inetintel.cc.gatech.edu/v2/outages/alerts
+    cloudflare-url: https://api.cloudflare.com/client/v4/radar/annotations/outages
+    cloudflare-token: ${CLOUDFLARE_API_TOKEN:}
+    refresh-secret: ${MONITORING_REFRESH_SECRET:}
