@@ -9,101 +9,101 @@ Ase Naki should answer the practical question a user has during a service proble
 
 > Is this problem only mine, or are other people nearby experiencing it too?
 
-The current automatic national monitoring and community report features remain useful, but they are not enough by themselves. This iteration adds a local incident layer that turns repeated community signals into a current area-level utility status.
+The existing national monitoring and community reports remain useful, but they do not by themselves answer that local question. This iteration adds a local incident layer that converts fresh, unique community observations into an explainable area-level service state.
 
-The project remains suitable for an undergraduate Spring Boot class project. It must stay explainable, testable, free to run, and honest about uncertainty.
+The project must remain suitable for an undergraduate Spring Boot class project: explainable, testable, free to run, and honest about uncertainty.
 
 ## 2. Hard UI Constraint
 
-The current UI is approved and must not be redesigned.
+The current UI is approved and frozen.
 
 The implementation must preserve:
 
-- the current navbar;
-- the current hero section;
-- the current homepage section order;
-- the current color palette;
+- current navbar;
+- current hero section;
+- current homepage section order;
+- current color palette;
 - typography;
 - spacing system;
 - existing report cards;
 - existing status pills;
 - existing button styles;
 - login and registration pages;
-- the current report form;
-- the current automatic-monitoring section;
-- the current responsive behavior.
+- current report form;
+- current automatic-monitoring section;
+- current responsive behavior.
 
 `style.css` must not be globally redesigned. New functionality should appear inside existing cards, metadata rows, action rows, and existing page patterns wherever possible.
 
-The goal is to improve usefulness and engagement through backend behavior and small data-driven additions, not by changing the visual identity.
+No new hero selector, no dashboard redesign, no section reordering, and no new global visual system are allowed in this iteration.
 
 ## 3. Utility Scope
 
-All five current utilities remain supported.
+All five existing utilities remain supported.
 
 ### Electricity
 
-Receives the full live-incident experience:
+Gets the full live-incident experience:
 
-- area-level active incidents;
+- area-level incidents;
 - one-tap confirmations;
-- freshness;
 - confidence;
+- freshness;
 - restoration signals;
 - incident history;
-- national grid context shown separately.
+- Power Grid Bangladesh shown only as broader context.
 
 ### Internet
 
-Receives the full live-incident experience:
+Gets the full live-incident experience:
 
-- area-level active incidents;
+- area-level incidents;
 - optional provider-aware incidents;
 - one-tap confirmations;
-- freshness;
 - confidence;
+- freshness;
 - restoration signals;
 - incident history;
-- IODA/Cloudflare context shown separately.
+- IODA/Cloudflare shown only as broader context.
 
 ### Gas and Water
 
-Remain community-driven because there is no reliable verified neighborhood-level public automatic source available for the project. They use recent-community summaries and existing status types such as low pressure and maintenance. They must not pretend to have real-time automatic detection.
+Remain community-driven. Existing states such as low pressure and maintenance stay valid. They may show recent-community summaries, but the application must not pretend they have neighborhood-level automatic live detection.
 
 ### Mobile Network
 
-Uses a simpler incident model with provider awareness. Supported normalized providers should initially include:
+Uses the simpler incident model with provider awareness. Initial normalized providers:
 
-- Grameenphone;
-- Robi;
-- Banglalink;
-- Teletalk.
+```text
+GRAMEENPHONE
+ROBI
+BANGLALINK
+TELETALK
+```
 
-The system should remain extensible to additional providers without changing the core incident model.
+The model remains extensible.
 
 ## 4. Existing Features Preserved
 
-The following existing features remain valid and continue to work:
+Keep working:
 
 - `Area` as the single location entity;
 - `UtilityReport` as the detailed community-report object;
-- evidence image upload;
-- registration and login;
-- Spring Security and CSRF protections;
-- user/account/profile relationships;
-- national Power Grid monitoring;
+- image evidence upload;
+- registration/login;
+- Spring Security and CSRF;
+- existing JPA relationships;
+- Power Grid monitoring;
 - IODA monitoring;
 - optional Cloudflare Radar monitoring;
-- Neon PostgreSQL deployment;
+- Neon PostgreSQL;
 - Render deployment;
 - GitHub Actions monitoring refresh;
-- existing report-detail pages.
+- current report/detail pages.
 
-The new incident system extends the existing architecture rather than replacing it.
+The new incident system extends the current architecture rather than replacing it.
 
 ## 5. Core Architecture
-
-The new local status layer is centered on:
 
 ```text
 Area
@@ -113,17 +113,17 @@ UtilityIncident
 IncidentSignal
 ```
 
-A `UtilityIncident` represents one local service event for an area and utility, optionally scoped to a provider.
+`UtilityIncident` represents one local utility event for an area and utility, optionally scoped to a provider.
 
-An `IncidentSignal` represents one signed-in user's current observation for that incident.
+`IncidentSignal` represents one signed-in user's current observation for that incident.
 
-`UtilityReport` remains the richer optional evidence object. A report may optionally reference the incident it supports.
+`UtilityReport` remains the richer optional evidence object and may reference an incident.
 
-Automatic national monitoring remains a separate source of broader context and never becomes the local truth object.
+Automatic national monitoring remains separate and can never become local truth by itself.
 
 ## 6. UtilityIncident Data Model
 
-Add a new entity similar to:
+Add an entity similar to:
 
 ```text
 UtilityIncident
@@ -139,32 +139,33 @@ UtilityIncident
 - dismissed
 ```
 
-### Relationships
+Relationships:
 
 - many incidents belong to one `Area`;
 - one incident has many `IncidentSignal` rows;
-- one incident may have many detailed `UtilityReport` rows;
-- a provider is optional and stored as a normalized value where needed.
+- one incident may have many `UtilityReport` rows.
 
-### Active-Incident Identity
+### Active incident identity
 
-For Electricity, the active key is:
+Electricity:
 
 ```text
 Area + UtilityType
 ```
 
-For provider-aware Internet or Mobile incidents, the active key is:
+Provider-aware Internet or Mobile:
 
 ```text
 Area + UtilityType + Provider
 ```
 
-The service must avoid creating duplicate active incidents for the same key.
+Internet without a provider uses a distinct area-wide key and must not be merged with provider-specific incidents.
+
+The service must prevent duplicate active incidents for the same key.
 
 ## 7. IncidentSignal Data Model
 
-Add an entity similar to:
+Add:
 
 ```text
 IncidentSignal
@@ -176,7 +177,7 @@ IncidentSignal
 - updatedAt
 ```
 
-The supported signal types are:
+Signal types:
 
 ```text
 SAME_PROBLEM
@@ -185,29 +186,40 @@ STILL_OUT
 RESTORED
 ```
 
-The database must enforce:
+Database constraint:
 
 ```text
 UNIQUE(incident, user)
 ```
 
-A user therefore contributes at most one current signal to an incident. Tapping another action updates the existing signal instead of incrementing the total again.
+One user therefore contributes at most one current signal to an incident. A new tap updates that user's existing row instead of increasing the unique-user count.
 
-## 8. User Profile / Preferred Area
+Signal meaning for aggregation:
+
+```text
+Affected signals:
+SAME_PROBLEM, STILL_OUT
+
+Non-affected signal:
+WORKING_FOR_ME
+
+Recovery signal:
+RESTORED
+```
+
+## 8. Preferred Area
 
 Reuse the existing `Area` entity.
 
-Extend `UserProfile` with an optional `preferredArea` relationship rather than creating a second location model.
+Add an optional `preferredArea` relationship to `UserProfile`.
 
-Signed-in users may save one preferred area in this iteration.
+A signed-in user may save exactly one preferred area in this iteration. It changes query prioritization only and does not require a homepage redesign.
 
-The preferred area affects prioritization/query ordering but does not require a homepage redesign.
+Guests can read incidents and reports. Signal submission and preferred-area writes require authentication.
 
-Guests may read all incidents and reports. One-tap signal submission requires authentication.
+## 9. Incident State and Confidence
 
-## 9. Incident State Model
-
-Use a small explainable state enum, for example:
+States:
 
 ```text
 POSSIBLE_ISSUE
@@ -219,13 +231,7 @@ RESOLVED
 STALE
 ```
 
-The UI-facing labels may use clearer wording while preserving the underlying enum semantics.
-
-The state must always be computed from server-owned data. Users cannot submit incident state directly.
-
-## 10. Confidence Model
-
-Use categorical confidence rather than a fake statistical percentage:
+Confidence:
 
 ```text
 LOW
@@ -233,76 +239,163 @@ MEDIUM
 HIGH
 ```
 
-Confidence is based on unique recent users, agreement, contradiction, and freshness.
+Users never submit state or confidence directly. The server calculates both from current stored signals.
 
-Initial deterministic rules:
+## 10. Freshness Constants
+
+Use explicit constants:
 
 ```text
-1 fresh unique affected user
-→ POSSIBLE_ISSUE + LOW
-
-2–3 fresh unique affected users agreeing
-→ LIKELY_OUTAGE + MEDIUM
-
-4+ fresh unique affected users,
-with affected signals clearly dominating working signals
-→ CONFIRMED_OUTAGE + HIGH
-
-Meaningful disagreement between affected and working users
-→ MIXED_REPORTS
-
-2+ restoration signals after an outage
-→ RESTORATION_REPORTED
-
-Restoration/working signals dominate,
-and no newer affected signal exists
-→ RESOLVED
-
-No fresh signal for 60 minutes
-→ STALE
+FRESH_SIGNAL_WINDOW = 45 minutes
+STALE_INCIDENT_AFTER = 60 minutes
+SIGNAL_CHANGE_COOLDOWN = 2 minutes
+DUPLICATE_DETAILED_REPORT_WINDOW = 10 minutes
 ```
 
-The exact implementation should keep these thresholds explicit constants so they are simple to explain and test.
+A signal older than 45 minutes does not participate in current-state voting.
 
-Silence never means service is available.
+If an unresolved incident has had no fresh signal for 60 minutes, it becomes `STALE`, not `RESOLVED`.
 
-## 11. Freshness Rules
+Silence never means the utility is working.
 
-A signal is considered fresh for 45 minutes.
+## 11. Deterministic Aggregation Rules
 
-Incident calculations should prioritize only fresh signals for the current state.
+Calculate using fresh unique-user signals only.
 
-If no fresh signal remains for 60 minutes, the incident becomes `STALE` rather than automatically `RESOLVED`.
+Let:
 
-Historical records remain stored for later area-history views.
+```text
+A = number of affected users
+W = number of WORKING_FOR_ME users
+R = number of RESTORED users
+```
+
+For recency comparisons, use each signal's `updatedAt`.
+
+Apply rules in this order:
+
+### 11.1 Stale
+
+If the incident has no fresh signal and `lastSignalAt` is at least 60 minutes old:
+
+```text
+STALE + LOW
+```
+
+### 11.2 Restoration reported
+
+If the incident previously reached `LIKELY_OUTAGE`, `CONFIRMED_OUTAGE`, or `MIXED_REPORTS`, and:
+
+```text
+R >= 2
+```
+
+then:
+
+```text
+RESTORATION_REPORTED
+```
+
+unless a newer affected signal exists after the newest recovery signal.
+
+Confidence is `MEDIUM` when `R` is 2–3 and `HIGH` when `R >= 4`.
+
+### 11.3 Resolved
+
+An incident becomes `RESOLVED` when all are true:
+
+```text
+R + W >= 3
+R + W > A
+no affected signal is newer than the newest RESTORED or WORKING_FOR_ME signal
+```
+
+Set `resolvedAt` when this transition occurs.
+
+### 11.4 Mixed reports
+
+If:
+
+```text
+A >= 2
+W >= 2
+```
+
+and neither side is at least twice the other side, then:
+
+```text
+MIXED_REPORTS + MEDIUM
+```
+
+### 11.5 Confirmed outage
+
+If:
+
+```text
+A >= 4
+A >= 2 * max(W, 1)
+```
+
+then:
+
+```text
+CONFIRMED_OUTAGE + HIGH
+```
+
+### 11.6 Likely outage
+
+If:
+
+```text
+A is 2 or 3
+A > W
+```
+
+then:
+
+```text
+LIKELY_OUTAGE + MEDIUM
+```
+
+### 11.7 Possible issue
+
+If:
+
+```text
+A >= 1
+```
+
+but no stronger rule matches:
+
+```text
+POSSIBLE_ISSUE + LOW
+```
+
+### 11.8 Working-only observations
+
+Fresh `WORKING_FOR_ME` observations without any affected signal do not create a new outage incident. They may be retained only when attached to an already-existing incident.
+
+This prevents the application from inventing a healthy incident from silence or isolated positive reports.
 
 ## 12. Internet Provider Handling
 
 Internet provider is optional.
 
-If provided, provider participates in the incident key.
+If supplied, normalize by trimming whitespace and using a case-insensitive canonical value. Provider-specific incidents remain separate from area-wide incidents.
 
-Example:
+Examples that must remain separate:
 
 ```text
 Dhanmondi + Internet + Link3
-```
-
-must stay separate from:
-
-```text
 Dhanmondi + Internet + BTCL
+Dhanmondi + Internet + no provider
 ```
 
-and from an area-wide Internet incident with no provider selected.
-
-The implementation should normalize provider names to prevent obvious duplicate spelling variants where practical, but must not attempt to build a comprehensive Bangladesh ISP registry in this iteration.
+Do not build a complete national ISP registry in this iteration.
 
 ## 13. Mobile Provider Handling
 
-Mobile provider is required for provider-specific mobile incidents.
-
-Initial normalized values:
+Mobile incidents use the normalized enum values:
 
 ```text
 GRAMEENPHONE
@@ -311,154 +404,170 @@ BANGLALINK
 TELETALK
 ```
 
-The data model should remain extensible.
+Provider is required when creating a provider-specific mobile incident.
 
-## 14. UtilityReport Integration
+## 14. Detailed Report Integration
 
-`UtilityReport` remains the detailed community-report object.
+Keep the existing `UtilityReport` flow and add an optional relationship from report to incident.
 
-Add an optional relationship from `UtilityReport` to `UtilityIncident`.
+For Electricity and Internet detailed reports:
 
-Detailed report creation should:
+- `UNAVAILABLE` or `UNSTABLE` maps to an affected signal;
+- `AVAILABLE` maps to `WORKING_FOR_ME` when a compatible active incident already exists;
+- `AVAILABLE` by itself does not create a new incident;
+- `MAINTENANCE` may attach to a compatible incident as detailed context but does not automatically count as an affected signal unless the submitted status also represents actual unavailability;
+- one detailed report from a user can create/update at most one signal for the compatible incident.
 
-1. save the existing report exactly as today;
-2. detect whether the utility/status represents a disruption or restoration;
-3. attach to an existing compatible active incident when appropriate;
-4. create a compatible incident when appropriate;
-5. optionally create/update the reporter's signal so the detailed report also counts once in incident aggregation.
+For Gas and Water, keep the current detailed-report behavior and recent-community summary; do not force all status types into the full outage aggregation model.
 
-Image evidence remains optional and unchanged.
+For Mobile, provider is used when matching or creating the compatible incident.
 
-The existing report form must remain available and visually consistent with the current UI.
+Image evidence stays unchanged.
 
-## 15. One-Tap Participation
+## 15. Duplicate Detailed-Report Rule
 
-For active incidents, authenticated users can submit one of the supported signal types.
+Reject a new detailed report when all are true:
 
-One-tap actions must:
+```text
+same authenticated user
+same area
+same utility
+same provider scope where applicable
+submitted within the previous 10 minutes
+same status
+```
 
-- use existing button styles;
-- require authentication;
-- use CSRF protection;
-- update an existing user signal when present;
-- recalculate incident state immediately;
-- never allow the client to submit confidence or state directly;
-- avoid duplicate counting.
+Return a useful validation message instead of saving another duplicate row.
 
-The detailed report form remains the secondary path for descriptions and evidence.
+A different status inside that window is allowed because it may represent a real change, such as restoration.
 
-## 16. Abuse and Duplicate Protection
+## 16. One-Tap Participation
 
-The design intentionally avoids a complex reputation algorithm.
+Authenticated users can submit one of the supported signal types on an active incident.
 
-Use simple deterministic controls:
+Requirements:
+
+- reuse current button styles;
+- retain CSRF protection;
+- update the user's existing incident signal when present;
+- reject signal changes made less than 2 minutes after the previous change, except an immediate `RESTORED` transition is allowed;
+- recalculate incident state after every accepted change;
+- never accept client-submitted state, confidence, counts, or timestamps;
+- stale, resolved, or dismissed incidents reject normal signal submissions.
+
+The detailed report form remains available for descriptions and evidence.
+
+## 17. Abuse Protection
+
+Use deterministic controls only:
 
 - one current signal per user per incident;
-- server-owned timestamps;
-- short cooldown between repeated signal changes;
-- recent duplicate detailed reports from the same user/area/utility rejected or merged when clearly redundant;
-- authenticated participation for signals;
-- admin-only dismissal/moderation;
-- no client-submitted confidence/state;
-- no raw anonymous vote inflation.
+- authenticated signal participation;
+- server timestamps;
+- 2-minute signal-change cooldown;
+- 10-minute duplicate detailed-report rule;
+- database uniqueness constraint;
+- admin-only moderation;
+- no anonymous voting;
+- no client-owned confidence or incident state.
 
-A public leaderboard is explicitly out of scope because it would create incentives for spam.
+Do not add a public leaderboard or complicated reputation score.
 
-## 17. Moderation
+## 18. Moderation
 
-Existing admin authorization should be extended so an admin can:
+Admins may:
 
-- dismiss an obviously false incident;
-- mark an incident resolved when necessary;
-- preserve historical data rather than deleting the incident record outright.
+- dismiss a false incident;
+- mark an incident resolved;
+- preserve the record for history rather than deleting it.
 
-Normal users must not access moderation actions.
+Normal users cannot access moderation actions.
 
-Dismissed incidents should not appear in normal active-incident queries.
+Dismissed incidents do not appear in active-incident queries.
 
-## 18. External Monitoring Relationship
+## 19. External Monitoring Relationship
 
-National/automatic monitoring is supporting context only.
+Automatic sources are context only.
 
 ### Power Grid Bangladesh
 
-National demand/supply/load-shedding data may be shown alongside local electricity incidents, but it must never automatically mark a local area as unavailable.
+National demand, supply, and load-shedding data may accompany local Electricity information but must never automatically mark Mirpur, Dhanmondi, or any other area as unavailable.
 
 ### IODA and Cloudflare Radar
 
-Bangladesh-wide Internet anomaly signals may be shown alongside local Internet incidents, but they must never automatically mark an area/provider incident as confirmed.
+Bangladesh-level Internet signals may accompany local Internet information but must never automatically confirm an area/provider incident.
 
-The separation must remain explicit:
+The conceptual separation is fixed:
 
 ```text
 Local incident
-→ what nearby users are currently experiencing
+→ what nearby users report now
 
 Automatic external status
-→ whether there may also be a broader national/network issue
+→ whether a broader problem may also exist
 ```
 
-## 19. Homepage Integration With UI Frozen
+## 20. Homepage Integration With UI Frozen
 
-The current homepage structure remains unchanged.
+The current homepage layout stays unchanged.
 
-The implementation may enrich existing cards and metadata with incident information such as:
+Existing cards may gain metadata such as:
 
 ```text
 8 affected · 2 working · updated 4 min ago
 ```
 
-or:
+Existing status pills may show:
 
 ```text
-Likely outage · Medium confidence
+Likely outage
+Confirmed outage
+Mixed reports
+Restoration reported
+Stale
 ```
 
-Existing status-pill and card-action patterns should be reused.
+Existing action areas may use current button classes for one-tap actions.
 
-No new hero selector, no dashboard redesign, no section reordering, and no new global visual system are allowed in this iteration.
+Preferred-area data may prioritize matching incident/report cards through backend ordering only.
 
-Preferred-area data may be used by the backend to prioritize relevant incidents within the existing content patterns.
+No section reordering or new homepage visual system is permitted.
 
-## 20. Engagement Features Included
+## 21. Engagement Features Included
 
-Engagement must support the real utility-status problem rather than social-media behavior.
-
-Include:
+Include only engagement tied to utility usefulness:
 
 - one-tap confirmations;
 - preferred-area saving;
-- incident freshness;
+- freshness labels;
 - incident timeline/history;
 - restoration signals;
 - recent area incident history;
-- personal contribution history/count;
-- optional quiet helpful-contributor indicator if it can be implemented without a complex scoring system;
-- on-site restoration information when users revisit relevant incident/detail pages.
+- personal contribution count/history;
+- a simple quiet “helpful contributor” indicator only if it can be derived from corroborated contributions without a scoring subsystem;
+- restoration information on subsequent visits to relevant incident/detail pages.
 
-## 21. Engagement Features Explicitly Excluded
+If the helpful-contributor indicator would require a new scoring/reputation subsystem, omit it from this iteration.
+
+## 22. Engagement Features Excluded
 
 Do not add:
 
 - public leaderboards;
-- follower counts;
+- followers;
 - chatrooms;
-- unrestricted public comment threads;
-- likes unrelated to utility status;
-- gamified coins;
+- unrestricted comments;
+- unrelated likes/reactions;
+- coins;
 - streak pressure;
-- fake AI predictions;
-- paid push/SMS infrastructure;
-- a new mobile app;
-- WebSockets for this iteration.
+- fake AI prediction;
+- paid SMS/push infrastructure;
+- a mobile app;
+- WebSockets.
 
-The product should feel useful, not noisy.
+## 23. Service Boundaries
 
-## 22. Query / Service Layer
-
-Add focused services rather than placing aggregation logic in controllers.
-
-Suggested structure:
+Suggested package:
 
 ```text
 incident
@@ -467,7 +576,7 @@ incident
 ├── IncidentState.java
 ├── IncidentConfidence.java
 ├── IncidentSignalType.java
-├── UtilityProvider.java (or equivalent normalization helper)
+├── UtilityProvider.java
 ├── UtilityIncidentRepository.java
 ├── IncidentSignalRepository.java
 ├── IncidentAggregationService.java
@@ -475,11 +584,11 @@ incident
 └── IncidentQueryService.java
 ```
 
-Exact names may follow existing package conventions.
+Exact names may follow current package conventions.
 
 ### IncidentAggregationService
 
-Responsible only for deterministic state/confidence calculation.
+Pure deterministic calculation from incident/signal data. It must not perform HTTP calls or controller work.
 
 ### IncidentService
 
@@ -487,20 +596,26 @@ Responsible for:
 
 - find/create compatible active incident;
 - submit/update signal;
-- enforce cooldown/duplicate rules;
-- recalculate incident;
-- resolve/dismiss where authorized;
-- link detailed reports where appropriate.
+- enforce cooldown and duplicate rules;
+- recalculate state;
+- link detailed reports;
+- moderation state transitions when authorized.
 
 ### IncidentQueryService
 
-Responsible for current active incidents, preferred-area prioritization, counts, and recent incident history.
+Responsible for:
 
-Controllers should stay thin.
+- active incident queries;
+- preferred-area prioritization;
+- counts;
+- recent history;
+- personal contribution summaries.
 
-## 23. Controller / Route Scope
+Controllers remain thin.
 
-Routes may include patterns similar to:
+## 24. Routes
+
+Expected route patterns may include:
 
 ```text
 POST /incidents/{id}/signals
@@ -509,109 +624,109 @@ POST /admin/incidents/{id}/dismiss
 POST /admin/incidents/{id}/resolve
 ```
 
-Exact route names may be adjusted to existing controller conventions.
+Exact names may follow existing controller conventions.
 
-All modifying user routes retain CSRF protection.
+All normal modifying routes retain CSRF.
 
-Signal and profile writes require authenticated users.
+Signal/profile writes require authentication. Admin routes require admin role.
 
-Admin routes require admin authorization.
+## 25. Error Handling
 
-## 24. Error Handling
-
-- invalid incident id → normal not-found handling;
-- stale/dismissed incident signal attempt → reject with a useful message;
+- invalid incident id → normal not-found behavior;
+- stale/resolved/dismissed signal attempt → reject with useful message;
 - invalid provider → validation error;
-- repeated signal inside cooldown → do not duplicate count;
-- concurrent submissions must respect the database uniqueness constraint;
-- aggregation failure must not corrupt existing incident data;
-- automatic-source failure must not affect local incident submission.
+- cooldown violation → do not modify or duplicate the signal;
+- concurrent duplicate signal submissions → database uniqueness remains final protection;
+- aggregation failure → transaction rolls back;
+- automatic-source failure → local incident submission remains available.
 
-The user-facing site should fail gracefully and preserve the existing UI conventions.
+## 26. Data Compatibility
 
-## 25. Data Migration / Compatibility
+The current application uses Hibernate `ddl-auto: update`, so new tables/columns can be introduced without deleting current data.
 
-Hibernate `ddl-auto: update` is currently used, so new tables/columns can be introduced without deleting existing data.
+Existing reports remain valid with `incident_id = null`.
 
-Existing reports remain valid even when they have no incident reference.
+Do not retroactively convert all historical reports into incidents in the first implementation. New incidents begin from new activity after deployment.
 
-The implementation should not attempt to retroactively convert every historical report into an incident unless a small deterministic bootstrap is clearly safe. Historical report migration is not required for the first version.
+## 27. Required Tests
 
-## 26. Required Tests
+Add tests for at least:
 
-The implementation must add tests covering at least:
+1. one affected signal → possible/low;
+2. duplicate user signal updates, not double-counts;
+3. 2–3 agreeing affected users → likely/medium;
+4. 4+ affected with 2:1 dominance → confirmed/high;
+5. 2+ affected and 2+ working without 2:1 dominance → mixed;
+6. 2+ recovery signals → restoration reported when no newer affected signal exists;
+7. recovery/working dominance → resolved under the defined rule;
+8. 60-minute silence → stale, not resolved;
+9. working-only observation does not create a new outage incident;
+10. provider-specific Internet incidents remain separate;
+11. mobile provider normalization;
+12. 2-minute signal cooldown;
+13. immediate restored transition exception;
+14. 10-minute duplicate detailed-report rejection;
+15. changed status inside duplicate window is allowed;
+16. detailed report links to compatible incident;
+17. available detailed report does not create an outage incident by itself;
+18. preferred-area prioritization;
+19. admin moderation authorization;
+20. normal user cannot moderate;
+21. guest cannot submit signal;
+22. CSRF remains enabled for user writes;
+23. existing report/auth/monitoring tests continue to pass;
+24. homepage structure and CSS are not globally redesigned.
 
-1. first affected signal creates/produces a possible incident;
-2. duplicate user signal updates instead of double-counting;
-3. 2–3 agreeing users produce medium confidence;
-4. 4+ agreeing users produce high confidence;
-5. contradictory affected/working reports produce mixed state;
-6. restoration transition behavior;
-7. silence/staleness produces `STALE`, not `RESOLVED`;
-8. provider-specific Internet incidents remain separate;
-9. Mobile provider normalization;
-10. signal cooldown behavior;
-11. duplicate detailed-report protection;
-12. detailed report links to compatible incident where appropriate;
-13. preferred-area prioritization;
-14. admin moderation authorization;
-15. normal users cannot call admin incident actions;
-16. guests can read but not submit signals;
-17. CSRF remains enabled for normal modifying routes;
-18. existing report/auth/monitoring tests continue to pass;
-19. existing homepage structure and CSS are not globally redesigned.
+Provider and monitoring tests must use fixtures/mocks, not live external APIs.
 
-Tests should use local fixtures/mocks and must not depend on live external APIs.
-
-## 27. Success Criteria
+## 28. Success Criteria
 
 This iteration succeeds when:
 
-- a real local outage can be represented as one shared incident instead of many disconnected posts;
-- users can confirm or contradict an incident in one action;
-- repeated taps from one account do not inflate counts;
-- incident state is explainable from unique recent signals;
-- stale data is never presented as confirmed availability;
-- restoration can be represented and resolved cleanly;
-- Electricity and Internet provide the strongest live experience;
-- Gas, Water, and Mobile stay honest about their weaker data sources;
-- national automatic monitoring remains contextual rather than pretending to be local truth;
-- the current approved UI remains visually intact;
-- existing detailed reports/evidence continue to work;
-- all automated tests pass;
-- the feature remains deployable on the current free Render + Neon stack.
+- repeated local reports become one shared incident instead of disconnected posts;
+- users can confirm, contradict, or report restoration in one action;
+- one account cannot inflate counts by repeated tapping;
+- current state is explainable from unique fresh signals;
+- contradictory data is visible rather than hidden;
+- stale data is never presented as availability;
+- Electricity and Internet provide the strongest local live experience;
+- Gas, Water, and Mobile remain honest about weaker data sources;
+- national automatic monitoring stays contextual;
+- current approved UI remains visually intact;
+- current detailed reports and evidence still work;
+- full tests pass;
+- the current free Render + Neon deployment remains viable.
 
-## 28. Implementation Order
+## 29. Implementation Order
 
-1. Add incident enums/entities/repositories and aggregation tests.
-2. Implement aggregation logic with RED→GREEN tests.
-3. Implement signal submission/update and cooldown protection.
-4. Add provider normalization and provider-specific incident tests.
-5. Add optional `preferredArea` to `UserProfile` and query prioritization.
-6. Link detailed reports to incidents without breaking existing report flow.
-7. Add admin moderation endpoints/security tests.
-8. Wire incident metadata/actions into existing templates using existing styles only.
-9. Add recent-history/contribution queries.
-10. Run full Maven verification.
-11. Review diff specifically for UI-freeze compliance.
-12. Merge only after CI is green.
-13. Deploy to the existing working Render service and verify the production behavior.
+1. Add incident enums/entities/repositories and failing aggregation tests.
+2. Implement deterministic aggregation RED→GREEN.
+3. Implement incident creation and one-signal-per-user updates.
+4. Add cooldown and duplicate-report protection.
+5. Add provider normalization/separation.
+6. Add `preferredArea` and query prioritization.
+7. Integrate `UtilityReport` with incidents.
+8. Add moderation endpoints/security tests.
+9. Add incident metadata/actions to existing templates with existing styles only.
+10. Add history/contribution queries.
+11. Run full Maven verification.
+12. Review diff specifically for UI-freeze compliance.
+13. Merge only after CI is green.
+14. Deploy to the existing working Render service and verify production behavior.
 
-## 29. Non-Goals
+## 30. Non-Goals
 
-This iteration does not attempt to provide:
+Do not build in this iteration:
 
 - feeder-level electricity telemetry;
-- true household availability detection;
-- guaranteed provider outage feeds for every ISP/operator;
-- predictive machine learning;
+- household-level automatic availability detection;
+- guaranteed provider feeds for every ISP/operator;
+- predictive ML;
 - GPS tracking;
-- paid mapping;
+- paid maps;
 - SMS alerts;
 - push-notification infrastructure;
 - live chat;
 - IoT sensors;
-- a native mobile app;
-- a full moderation/reputation platform.
-
-These are intentionally excluded to keep the system credible and appropriate for the project scope.
+- native mobile app;
+- full moderation/reputation platform.
