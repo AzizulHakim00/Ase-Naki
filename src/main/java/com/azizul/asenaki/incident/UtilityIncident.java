@@ -1,7 +1,6 @@
 package com.azizul.asenaki.incident;
 
 import com.azizul.asenaki.location.Area;
-import com.azizul.asenaki.report.UtilityReport;
 import com.azizul.asenaki.report.UtilityType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -66,7 +65,4 @@ public class UtilityIncident {
 
     @OneToMany(mappedBy = "incident", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IncidentSignal> signals = new ArrayList<>();
-
-    @OneToMany(mappedBy = "incident")
-    private List<UtilityReport> reports = new ArrayList<>();
 }
