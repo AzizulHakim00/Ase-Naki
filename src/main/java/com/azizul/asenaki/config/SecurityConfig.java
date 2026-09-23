@@ -17,26 +17,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(request -> request
                         .requestMatchers(
                                 "/", "/login", "/register",
                                 "/css/**", "/images/**",
                                 "/actuator/health", "/error"
                         ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/reports/{id:[0-9]+}", "/evidence/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/internal/monitoring/refresh"
-                        ).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/reports/{id}").permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/internal/monitoring/refresh"))
                 .formLogin(form -> form
                         .loginPage("/login")
                         .usernameParameter("email")
@@ -49,10 +40,9 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .rememberMe(remember -> remember
-                        .key("ase-naki-remember-me")
+                        .key("ase-naki-mongo-remember-me")
                         .tokenValiditySeconds(14 * 24 * 60 * 60)
                 );
-
         return http.build();
     }
 }

@@ -1,17 +1,10 @@
 services:
   - type: web
-    name: ase-naki
+    name: ase-naki-mongodb
     runtime: docker
     plan: free
+    branch: mongodb-crud-docker
     healthCheckPath: /actuator/health
     envVars:
-      - key: SPRING_PROFILES_ACTIVE
-        value: prod
-      - key: DATABASE_URL
+      - key: MONGODB_URI
         sync: false
-      - key: APP_ADMIN_PASSWORD
-        generateValue: true
-      - key: CLOUDFLARE_API_TOKEN
-        sync: false
-      - key: MONITORING_REFRESH_SECRET
-        generateValue: true

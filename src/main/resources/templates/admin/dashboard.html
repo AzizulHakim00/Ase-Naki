@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin | Ase Naki?</title>
+    <link rel="icon" type="image/webp" th:href="@{/images/app-icon.webp}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="container form-page">
+    <a class="back-link" th:href="@{/}"><i class="bi bi-arrow-left"></i> Back to home</a>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="form-card form-card-wide mb-4">
+        <span class="eyebrow">Administrator</span>
+        <h1>Admin dashboard</h1>
+        <p class="muted">Read users, enable or disable accounts, and manage every utility report.</p>
+    </div>
+
+    <div class="form-card form-card-wide mb-4">
+        <h2>Users</h2>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <td th:text="${user.name}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td th:text="${user.role}"></td>
+                    <td th:text="${user.enabled ? 'Enabled' : 'Disabled'}"></td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <form th:action="@{/admin/users/{id}/toggle(id=${user.id})}" method="post">
+                                <button class="btn btn-sm btn-outline-secondary" type="submit"
+                                        th:text="${user.enabled ? 'Disable' : 'Enable'}">Toggle</button>
+                            </form>
+                            <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post"
+                                  onsubmit="return confirm('Delete this user?');">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="form-card form-card-wide">
+        <h2>Reports</h2>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr><th>Area</th><th>Utility</th><th>Status</th><th>Reporter</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="report : ${reports}">
+                    <td th:text="${report.area.displayName}"></td>
+                    <td th:text="${report.utilityType.label}"></td>
+                    <td th:text="${report.status.label}"></td>
+                    <td th:text="${report.reporterName}"></td>
+                    <td>
+                        <a class="btn btn-sm btn-brand"
+                           th:href="@{/reports/{id}(id=${report.id})}">Open</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
