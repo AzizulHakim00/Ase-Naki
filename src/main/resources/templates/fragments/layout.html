@@ -23,6 +23,9 @@
             </div>
 
             <div sec:authorize="isAuthenticated()" class="nav-actions">
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}">
+                    <i class="bi bi-shield-lock"></i> Admin
+                </a>
                 <a class="btn btn-brand btn-sm" th:href="@{/reports/add}">
                     <i class="bi bi-plus-circle"></i> Add report
                 </a>
@@ -53,12 +56,12 @@
             </ul>
         </div>
         <div>
-            <h3>Safety reminder</h3>
-            <p>Share honest updates. Do not upload private documents or recognisable faces.</p>
+            <h3>Demo scope</h3>
+            <p>MongoDB-backed CRUD with separate user and administrator permissions.</p>
         </div>
     </div>
     <div class="container footer-bottom">
-        <span>Built with Spring Boot and Neon PostgreSQL.</span>
+        <span>Built with Spring Boot and MongoDB Atlas.</span>
         <span>Ase Naki? &copy; 2026</span>
     </div>
 </footer>
